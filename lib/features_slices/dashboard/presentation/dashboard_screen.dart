@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:auditpos/features_slices/dashboard/presentation/dashboard_card.dart';
 import 'package:auditpos/shell/auth_/login_screen.dart';
 import 'package:auditpos/shell/network/websocket_service.dart';
 import 'package:auditpos/shell/products/products_screen.dart';
+import 'package:flutter/material.dart';
 
+import '../../../shell/items_audit/view/audit_screen.dart';
 import '../../../shell/network/app_constants.dart';
 import '../../../shell/network/storage_service.dart';
-import '../../audit/presentation/audit_list_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -78,7 +78,7 @@ class DashboardScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const AuditListScreen()),
+                  MaterialPageRoute(builder: (_) => const AuditScreen()),
                 );
               },
             ),

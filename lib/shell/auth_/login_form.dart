@@ -1,5 +1,4 @@
 import 'package:auditpos/features_slices/dashboard/presentation/dashboard_screen.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../network/app_constants.dart';
@@ -15,8 +14,8 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
-  final usernameController = TextEditingController( text: "admin");
-  final passwordController = TextEditingController( text: "admin");
+  final usernameController = TextEditingController(text: "admin");
+  final passwordController = TextEditingController(text: "admin");
 
   bool loading = false;
 
@@ -45,7 +44,7 @@ class _LoginFormState extends State<LoginForm> {
 
         await StorageService.saveToken(token);
 
-        WebSocketService.instance.connect(token);
+        await WebSocketService.instance.connect();
 
         if (!mounted) return;
 
@@ -63,9 +62,9 @@ class _LoginFormState extends State<LoginForm> {
     } catch (e) {
       debugPrint("LOGIN ERROR => $e");
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Server error: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Server error: $e")));
     }
 
     setState(() => loading = false);
@@ -97,9 +96,10 @@ class _LoginFormState extends State<LoginForm> {
           height: 50,
           child: ElevatedButton(
             onPressed: loading ? null : login,
-            child: loading
-                ? const CircularProgressIndicator()
-                : const Text("LOGIN"),
+            child:
+                loading
+                    ? const CircularProgressIndicator()
+                    : const Text("LOGIN"),
           ),
         ),
       ],

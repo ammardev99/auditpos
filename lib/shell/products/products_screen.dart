@@ -24,6 +24,8 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     });
   }
 
+  final searchController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(productProvider);
@@ -37,19 +39,61 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text("Products (${state.data.length})")),
-      body: ListView.builder(
-        itemCount: state.data.length,
-        itemBuilder: (context, index) {
-          final item = state.data[index];
+      appBar: AppBar(title: Text("Products (${state.filteredData.length})")),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
 
-          return ProductTile(
-            productName: item.productName,
-            productCode: item.productCode,
-            qty: item.quantityInstock.toString(),
-            price: item.currentRate.toString(),
-          );
-        },
+            child: TextField(
+              controller: searchController,
+
+              onChanged: (value) {
+                ref.read(productProvider.notifier).searchProducts(value);
+              },
+
+              decoration: InputDecoration(
+                hintText: "Search by name or barcode",
+
+                prefixIcon: const Icon(Icons.search),
+
+                suffixIcon:
+                    searchController.text.isNotEmpty
+                        ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            searchController.clear();
+                            ref
+                                .read(productProvider.notifier)
+                                .searchProducts('');
+                          },
+                        )
+                        : null,
+
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: ListView.builder(
+              itemCount: state.filteredData.length,
+
+              itemBuilder: (context, index) {
+                final item = state.filteredData[index];
+
+                return ProductTile(
+                  productName: item.productName,
+                  productCode: item.productCode,
+                  qty: item.quantityInstock.toString(),
+                  price: item.currentRate.toString(),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

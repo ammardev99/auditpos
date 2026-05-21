@@ -1,7 +1,7 @@
+import 'package:auditpos/shell/audit_confirm/view/audit_confirmation_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../audit_sessions_data/view/audit_detail_screen.dart';
 import '../data/audit_sessions_provider.dart';
 import 'audit_session_tile.dart';
 
@@ -45,10 +45,14 @@ class _AuditSessionsScreenState extends ConsumerState<AuditSessionsScreen> {
                         context,
                         MaterialPageRoute(
                           builder:
-                              (context) => AuditDetailScreen(
+                              (context) => AuditConfirmationScreen(
                                 auditId: session.auditId,
                                 auditNo: session.auditNo,
                               ),
+                          // AuditDetailScreen(
+                          //   auditId: session.auditId,
+                          //   auditNo: session.auditNo,
+                          // ),
                         ),
                       );
                     },

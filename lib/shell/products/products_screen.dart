@@ -1,6 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:auditpos/shell/products/data/p_provider.dart';
 import 'package:auditpos/shell/products/product_tile.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {

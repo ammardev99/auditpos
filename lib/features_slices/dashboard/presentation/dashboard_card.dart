@@ -30,14 +30,14 @@ class DashboardCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 50, color: color),
+            Icon(icon, size: 30, color: color),
 
             const SizedBox(height: 15),
 
             Text(
               title,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: color,
               ),

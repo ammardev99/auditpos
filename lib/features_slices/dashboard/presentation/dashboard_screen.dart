@@ -1,4 +1,5 @@
 import 'package:auditpos/features_slices/dashboard/presentation/dashboard_card.dart';
+import 'package:auditpos/shell/audit_sessions/view/audit_sessions_screen.dart';
 import 'package:auditpos/shell/auth_/login_screen.dart';
 import 'package:auditpos/shell/network/websocket_service.dart';
 import 'package:auditpos/shell/products/products_screen.dart';
@@ -55,7 +56,7 @@ class DashboardScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: GridView.count(
-          crossAxisCount: 2,
+          crossAxisCount: 3,
           crossAxisSpacing: 15,
           mainAxisSpacing: 15,
           children: [
@@ -79,6 +80,17 @@ class DashboardScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const AuditScreen()),
+                );
+              },
+            ),
+            DashboardCard(
+              title: "Audit Sessions",
+              icon: Icons.fact_check,
+              color: Colors.orange,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AuditSessionsScreen()),
                 );
               },
             ),

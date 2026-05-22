@@ -11,7 +11,7 @@ class ServerIpScreen extends StatefulWidget {
 
 class _ServerIpScreenState extends State<ServerIpScreen> {
   final TextEditingController ipController = TextEditingController(
-    text: "192.168.1.18",
+    text: "192.168.1.17",
   );
 
   void continueToLogin() {
@@ -74,6 +74,19 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
                       child: const Text("Continue"),
                     ),
                   ),
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //   height: 50,
+                  //   child: ElevatedButton(
+                  //     onPressed: () {
+                  //       Navigator.pushReplacement(
+                  //         context,
+                  //         MaterialPageRoute(builder: (_) => DashboardScreen()),
+                  //       );
+                  //     },
+                  //     child: const Text("da"),
+                  //   ),
+                  // ),
                 ],
               ),
             ),

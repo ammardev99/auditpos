@@ -4,14 +4,18 @@ import 'audit_confirmation_state.dart';
 import 'confirmation_item_model.dart';
 
 final auditConfirmationProvider = StateNotifierProvider.family<
-    AuditConfirmationNotifier, AuditConfirmationState, int>((ref, auditId) {
+  AuditConfirmationNotifier,
+  AuditConfirmationState,
+  int
+>((ref, auditId) {
   return AuditConfirmationNotifier(auditId: auditId);
 });
 
 class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
   final int auditId;
 
-  AuditConfirmationNotifier({required this.auditId}) : super(AuditConfirmationState());
+  AuditConfirmationNotifier({required this.auditId})
+    : super(AuditConfirmationState());
 
   void initializeModule() {
     state = state.copyWith(isLoading: true);
@@ -23,12 +27,14 @@ class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
       // Catch backend list delivery
       if (actionReceived == 'get_audit_items') {
         final List rawDataList = data['data'] ?? [];
-        final parsed = rawDataList.map((e) => ConfirmationItemModel.fromJson(e)).toList();
+        final parsed =
+            rawDataList.map((e) => ConfirmationItemModel.fromJson(e)).toList();
         state = state.copyWith(isLoading: false, items: parsed);
       }
 
       // Automatically refresh when server states change or confirm a row approval
-      if (actionReceived == 'update_audit_item' || actionReceived == 'audit_item_approved') {
+      if (actionReceived == 'update_audit_item' ||
+          actionReceived == 'audit_item_approved') {
         fetchDataFromServer();
       }
 
@@ -45,13 +51,18 @@ class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
       "action": "get_audit_items",
       "payload": {
         "audit_id": auditId,
-        "mismatch_only": state.showMismatchesOnly, // Passes boolean directly to your PHP script
-      }
+        "mismatch_only":
+            state
+                .showMismatchesOnly, // Passes boolean directly to your PHP script
+      },
     });
   }
 
   void toggleServerFilter() {
-    state = state.copyWith(showMismatchesOnly: !state.showMismatchesOnly, isLoading: true);
+    state = state.copyWith(
+      showMismatchesOnly: !state.showMismatchesOnly,
+      isLoading: true,
+    );
     fetchDataFromServer();
   }
 
@@ -63,15 +74,16 @@ class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
   void approveSingleRowItem(int productId) {
     WebSocketService.instance.send({
       "action": "approve_audit_item",
-      "payload": {
-        "audit_id": auditId,
-        "product_id": productId,
-      }
+      "payload": {"audit_id": auditId, "product_id": productId},
     });
   }
 
   // Send an adjustment down the wire
-  void submitItemAdjustment({required int productId, required int qty, required double price}) {
+  void submitItemAdjustment({
+    required int productId,
+    required int qty,
+    required double price,
+  }) {
     WebSocketService.instance.send({
       "action": "update_audit_item",
       "payload": {

@@ -21,9 +21,14 @@ class AuditConfirmationState {
 
     if (searchQuery.isNotEmpty) {
       final textQuery = searchQuery.toLowerCase();
-      outputList = outputList.where((item) =>
-          item.productName.toLowerCase().contains(textQuery) ||
-          item.barcode.toLowerCase().contains(textQuery)).toList();
+      outputList =
+          outputList
+              .where(
+                (item) =>
+                    item.productName.toLowerCase().contains(textQuery) ||
+                    item.barcode.toLowerCase().contains(textQuery),
+              )
+              .toList();
     }
     return outputList;
   }

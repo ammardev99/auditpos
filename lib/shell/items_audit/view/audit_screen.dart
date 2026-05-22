@@ -37,33 +37,35 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
 
     final updatedItems = state.items.where((e) => e.phyQty > 0).length;
 
-    return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 0,
+    return ValueListenableBuilder<bool>(
+      valueListenable: WebSocketService.instance.isConnectedNotifier,
 
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (context, connected, _) {
+        return Scaffold(
+          appBar: AppBar(
+            titleSpacing: 0,
 
-          children: [
-            Text(
-              state.session == null ? "Audit Session" : state.session!.auditNo,
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
+              children: [
+                Text(
+                  state.session == null
+                      ? "Audit Session"
+                      : state.session!.auditNo,
+                ),
+
+                Text(
+                  "$updatedItems / $totalItems Updated",
+
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
             ),
 
-            Text(
-              "$updatedItems / $totalItems Updated",
-
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
-        ),
-
-        actions: [
-          /// WS STATUS
-          ValueListenableBuilder<bool>(
-            valueListenable: WebSocketService.instance.isConnectedNotifier,
-
-            builder: (context, connected, _) {
-              return Tooltip(
+            actions: [
+              /// WS STATUS
+              Tooltip(
                 message: AppConstants.wsUrl,
 
                 child: Padding(
@@ -88,160 +90,221 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
                     ],
                   ),
                 ),
-              );
-            },
+              ),
+            ],
           ),
-        ],
-      ),
 
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(12),
+          // =====================================================
+          // BLOCK ACTIONS IF DISCONNECTED
+          // =====================================================
+          bottomNavigationBar:
+              !connected
+                  ? null
+                  : Padding(
+                    padding: const EdgeInsets.all(12),
 
-        child: SizedBox(
-          height: 52,
+                    child: SizedBox(
+                      height: 52,
 
-          child: ElevatedButton.icon(
-            icon: Icon(state.session == null ? Icons.play_arrow : Icons.check),
+                      child: ElevatedButton.icon(
+                        icon: Icon(
+                          state.session == null
+                              ? Icons.play_arrow
+                              : Icons.check,
+                        ),
 
-            onPressed:
-                state.loading
-                    ? null
-                    : () {
-                      if (state.session == null) {
-                        notifier.startAudit();
-                      } else {
-                        notifier.completeAudit();
-                      }
-                    },
+                        onPressed:
+                            state.loading
+                                ? null
+                                : () {
+                                  if (state.session == null) {
+                                    notifier.startAudit();
+                                  } else {
+                                    notifier.completeAudit();
+                                  }
+                                },
 
-            label: Text(
-              state.loading
-                  ? "PLEASE WAIT..."
-                  : state.session == null
-                  ? "START AUDIT"
-                  : "COMPLETE AUDIT",
-            ),
-          ),
-        ),
-      ),
+                        label: Text(
+                          state.loading
+                              ? "PLEASE WAIT..."
+                              : state.session == null
+                              ? "START AUDIT"
+                              : "COMPLETE AUDIT",
+                        ),
+                      ),
+                    ),
+                  ),
 
-      body: Column(
-        children: [
-          /// SEARCH
-          if(state.filteredItems.isEmpty)
-          Padding(
-            padding: const EdgeInsets.all(12),
+          body:
+              !connected
+                  ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
 
-            child: TextField(
-              controller: searchController,
+                      children: [
+                        Icon(Icons.wifi_off, size: 60, color: Colors.red),
 
-              onChanged: (value) {
-                notifier.searchItems(value);
-              },
+                        SizedBox(height: 12),
 
-              decoration: InputDecoration(
-                hintText: "Search by name or barcode",
+                        Text(
+                          "WebSocket Disconnected",
 
-                prefixIcon: const Icon(Icons.search),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
 
-                suffixIcon:
-                    searchController.text.isNotEmpty
-                        ? IconButton(
-                          icon: const Icon(Icons.clear),
+                        SizedBox(height: 6),
 
-                          onPressed: () {
-                            searchController.clear();
+                        Text(
+                          "Audit operations are blocked until connection restores.",
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                  : Column(
+                    children: [
+                      /// SEARCH
+                      if (state.filteredItems.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(12),
 
-                            notifier.searchItems('');
+                          child: TextField(
+                            controller: searchController,
 
-                            setState(() {});
-                          },
+                            onChanged: (value) {
+                              notifier.searchItems(value);
+                            },
+
+                            decoration: InputDecoration(
+                              hintText: "Search by name or barcode",
+
+                              prefixIcon: const Icon(Icons.search),
+
+                              suffixIcon:
+                                  searchController.text.isNotEmpty
+                                      ? IconButton(
+                                        icon: const Icon(Icons.clear),
+
+                                        onPressed: () {
+                                          searchController.clear();
+
+                                          notifier.searchItems('');
+
+                                          setState(() {});
+                                        },
+                                      )
+                                      : null,
+
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                      /// STATS BAR
+                      if (state.session != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+
+                          child: Row(
+                            children: [
+                              _buildChip(
+                                label: "Total $totalItems",
+                                color: Colors.blue,
+                              ),
+
+                              const SizedBox(width: 8),
+
+                              _buildChip(
+                                label: "Updated $updatedItems",
+                                color: Colors.orange,
+                              ),
+
+                              const SizedBox(width: 8),
+
+                              _buildChip(
+                                label: "Pending ${totalItems - updatedItems}",
+                                color: Colors.red,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      const SizedBox(height: 8),
+
+                      /// LOADING
+                      if (state.loading)
+                        const Expanded(
+                          child: Center(child: CircularProgressIndicator()),
                         )
-                        : null,
+                      /// EMPTY STATE
+                      else if (state.filteredItems.isEmpty)
+                        const Expanded(
+                          child: Center(
+                            child: Text("Click on START AUDIT and load items"),
+                          ),
+                        )
+                      /// LIST
+                      else
+                        Expanded(
+                          child: ListView.builder(
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
 
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
+                            itemCount: state.filteredItems.length,
 
-          /// STATS BAR
-          if (state.session != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+                            itemBuilder: (context, index) {
+                              final item = state.filteredItems[index];
 
-              child: Row(
-                children: [
-                  _buildChip(label: "Total $totalItems", color: Colors.blue),
+                              return AuditItemTile(
+                                item: item,
 
-                  const SizedBox(width: 8),
+                                onTap: () {
+                                  // =====================================
+                                  // BLOCK UPDATE IF WS DISCONNECTED
+                                  // =====================================
+                                  if (!connected) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("WebSocket disconnected"),
+                                      ),
+                                    );
 
-                  _buildChip(
-                    label: "Updated $updatedItems",
-                    color: Colors.orange,
-                  ),
+                                    return;
+                                  }
 
-                  const SizedBox(width: 8),
+                                  showDialog(
+                                    context: context,
 
-                  _buildChip(
-                    label: "Pending ${totalItems - updatedItems}",
-                    color: Colors.red,
-                  ),
-                ],
-              ),
-            ),
+                                    builder: (_) {
+                                      return AuditUpdateDialog(
+                                        item: item,
 
-          const SizedBox(height: 8),
+                                        onSave: (qty, price) {
+                                          notifier.updateAuditItem(
+                                            productId: item.productId,
 
-          /// LOADING
-          if (state.loading)
-            const Expanded(child: Center(child: CircularProgressIndicator()))
-          /// EMPTY STATE
-          else if (state.filteredItems.isEmpty)
-            const Expanded(child: Center(child: Text("Click on START AUDIT and load items")))
-          /// LIST
-          else
-            Expanded(
-              child: ListView.builder(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
+                                            phyQty: qty,
 
-                itemCount: state.filteredItems.length,
-
-                itemBuilder: (context, index) {
-                  final item = state.filteredItems[index];
-
-                  return AuditItemTile(
-                    item: item,
-
-                    onTap: () {
-                      showDialog(
-                        context: context,
-
-                        builder: (_) {
-                          return AuditUpdateDialog(
-                            item: item,
-
-                            onSave: (qty, price) {
-                              notifier.updateAuditItem(
-                                productId: item.productId,
-
-                                phyQty: qty,
-
-                                phyPrice: price,
+                                            phyPrice: price,
+                                          );
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
                               );
                             },
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-        ],
-      ),
+                          ),
+                        ),
+                    ],
+                  ),
+        );
+      },
     );
   }
 
@@ -250,7 +313,7 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
 
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
 
         borderRadius: BorderRadius.circular(20),
       ),

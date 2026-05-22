@@ -1,22 +1,24 @@
-import 'package:auditpos/features_slices/dashboard/presentation/dashboard_card.dart';
+import 'package:auditpos/shell/dashboard/presentation/dashboard_card.dart';
 import 'package:auditpos/shell/audit_sessions/view/audit_sessions_screen.dart';
 import 'package:auditpos/shell/auth_/login_screen.dart';
 import 'package:auditpos/shell/network/websocket_service.dart';
 import 'package:auditpos/shell/products/products_screen.dart';
 import 'package:flutter/material.dart';
 
-import '../../../shell/items_audit/view/audit_screen.dart';
-import '../../../shell/network/app_constants.dart';
-import '../../../shell/network/storage_service.dart';
+import '../../items_audit/view/audit_screen.dart';
+import '../../network/app_constants.dart';
+import '../../network/storage_service.dart';
 
+// ignore: must_be_immutable
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  DashboardScreen({super.key});
+  bool connected = WebSocketService.instance.isConnectedNotifier.value;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Audit Dashboard"),
+        title: const Text("Audit Options"),
 
         actions: [
           ValueListenableBuilder<bool>(
@@ -40,7 +42,7 @@ class DashboardScreen extends StatelessWidget {
                       const SizedBox(width: 6),
 
                       Text(
-                        connected ? "WS Connected" : "WS Offline",
+                        connected ? "WS" : "WS",
 
                         style: const TextStyle(fontSize: 12),
                       ),
@@ -75,7 +77,7 @@ class DashboardScreen extends StatelessWidget {
             DashboardCard(
               title: "Audits",
               icon: Icons.fact_check,
-              color: Colors.green,
+              color: Colors.cyan,
               onTap: () {
                 Navigator.push(
                   context,
@@ -83,6 +85,7 @@ class DashboardScreen extends StatelessWidget {
                 );
               },
             ),
+
             DashboardCard(
               title: "Audit Sessions",
               icon: Icons.fact_check,
@@ -90,60 +93,66 @@ class DashboardScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const AuditSessionsScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const AuditSessionsScreen(),
+                  ),
                 );
               },
             ),
 
             DashboardCard(
-              title: "Reports",
-              icon: Icons.bar_chart,
-              color: Colors.orange,
-              onTap: () {},
-            ),
-
-            DashboardCard(
-              title: "Settings",
-              icon: Icons.settings,
-              color: Colors.purple,
-              onTap: () {},
-            ),
-
-            DashboardCard(
-              title: "Connect WS",
+              title: connected ? "Connected WS" : "Disconnected WS",
               icon: Icons.wifi,
-              color: Colors.red,
+              color: connected ? Colors.green : Colors.red,
               onTap: () async {
-                await WebSocketService.instance.connect();
-
-                // ignore: use_build_context_synchronously
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("WebSocket Connecting...")),
-                );
+                if (connected) {
+                  WebSocketService.instance.disconnect();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("WebSocket Disconnected")),
+                  );
+                }
+                if (!connected) {
+                  await WebSocketService.instance.connect();
+                  // ignore: use_build_context_synchronously
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("WebSocket Connecting...")),
+                  );
+                }
               },
             ),
 
+            // DashboardCard(
+            //   title: "Connect WS",
+            //   icon: Icons.wifi,
+            //   color: Colors.red,
+            //   onTap: () async {
+            //     await WebSocketService.instance.connect();
+            //     // ignore: use_build_context_synchronously
+            //     ScaffoldMessenger.of(context).showSnackBar(
+            //       const SnackBar(content: Text("WebSocket Connecting...")),
+            //     );
+            //   },
+            // ),
+
+            // DashboardCard(
+            //   title: "Disconnect WS",
+            //   icon: Icons.wifi_off,
+            //   color: Colors.black,
+            //   onTap: () {
+            //     WebSocketService.instance.disconnect();
+            //     ScaffoldMessenger.of(context).showSnackBar(
+            //       const SnackBar(content: Text("WebSocket Disconnected")),
+            //     );
+            //   },
+            // ),
             DashboardCard(
-              title: "Disconnect WS",
-              icon: Icons.wifi_off,
-              color: Colors.black,
-              onTap: () {
+              title: "Logout",
+              icon: Icons.logout,
+              color: Colors.brown,
+              onTap: () async {
                 WebSocketService.instance.disconnect();
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("WebSocket Disconnected")),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () async {
-                WebSocketService.instance.disconnect();
-
                 await StorageService.clear();
-
                 if (!context.mounted) return;
-
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (_) => const LoginScreen()),

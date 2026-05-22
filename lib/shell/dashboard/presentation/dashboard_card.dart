@@ -22,7 +22,7 @@ class DashboardCard extends StatelessWidget {
 
       child: Container(
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: color),
         ),

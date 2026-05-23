@@ -277,20 +277,24 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
                                     return;
                                   }
 
+                                  // Locate this section inside your ListView builder in audit_screen.dart:
                                   showDialog(
                                     context: context,
-
                                     builder: (_) {
                                       return AuditUpdateDialog(
                                         item: item,
-
-                                        onSave: (qty, price) {
+                                        onSave: (
+                                          qty,
+                                          price,
+                                          wholesalePrice,
+                                          rack,
+                                        ) {
                                           notifier.updateAuditItem(
                                             productId: item.productId,
-
                                             phyQty: qty,
-
                                             phyPrice: price,
+                                            phyWholesalePrice: wholesalePrice,
+                                            phyRack: rack,
                                           );
                                         },
                                       );

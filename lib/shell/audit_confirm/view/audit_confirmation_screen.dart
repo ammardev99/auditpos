@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../data/audit_confirmation_provider.dart';
 import '../data/confirmation_item_model.dart';
+import 'confirm_tile.dart';
 
 class AuditConfirmationScreen extends ConsumerStatefulWidget {
   final int auditId;
@@ -28,11 +28,9 @@ class AuditConfirmationScreen extends ConsumerStatefulWidget {
 class _AuditConfirmationScreenState
     extends ConsumerState<AuditConfirmationScreen> {
   final TextEditingController _searchFieldController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
-
     Future.delayed(Duration.zero, () {
       ref
           .read(auditConfirmationProvider(widget.auditId).notifier)
@@ -49,26 +47,20 @@ class _AuditConfirmationScreenState
   @override
   Widget build(BuildContext context) {
     final stateWatcher = ref.watch(auditConfirmationProvider(widget.auditId));
-
     final notifierAction = ref.read(
       auditConfirmationProvider(widget.auditId).notifier,
     );
-
     final visibleList = stateWatcher.computedVisibleItems;
-
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-
           children: [
             Text("Confirm Audit: ${widget.auditNo}"),
-
             // READ ONLY BADGE
             if (widget.readOnly)
               const Text(
                 "READ ONLY MODE",
-
                 style: TextStyle(
                   fontSize: 11,
                   color: Colors.orange,
@@ -159,214 +151,30 @@ class _AuditConfirmationScreenState
               ? const Center(
                 child: Text(
                   "No items match specifications.",
-
                   style: TextStyle(color: Colors.grey),
                 ),
               )
-              : ListView.builder(
+              : // Inside your original screen's ListView.builder block:
+              ListView.builder(
                 itemCount: visibleList.length,
-
                 itemBuilder: (context, idx) {
                   final targetItem = visibleList[idx];
 
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        color:
-                            targetItem.isApproved
-                                ? Colors.green
-                                : Colors.redAccent,
-
-                        width: 1,
-                      ),
-
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  targetItem.productName,
-
-                                  style: const TextStyle(
-                                    fontSize: 15,
-
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-
-                                decoration: BoxDecoration(
-                                  color:
-                                      targetItem.isApproved
-                                          ? Colors.green
-                                          : Colors.amber.shade700,
-
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-
-                                child: Text(
-                                  targetItem.isApproved
-                                      ? "Synced"
-                                      : "Pending Sync",
-
-                                  style: const TextStyle(
-                                    color: Colors.white,
-
-                                    fontSize: 11,
-
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 4),
-
-                          Text(
-                            "Barcode: ${targetItem.barcode}",
-
-                            style: const TextStyle(
-                              color: Colors.blueGrey,
-
-                              fontSize: 12,
-
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-
-                          const Divider(height: 16),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-
-                            children: [
-                              Column(
-                                children: [
-                                  const Text(
-                                    "System",
-
-                                    style: TextStyle(
-                                      fontSize: 12,
-
-                                      color: Colors.grey,
-
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-
-                                  Text("Qty: ${targetItem.systemQty}"),
-
-                                  Text(
-                                    "\$${targetItem.systemPrice.toStringAsFixed(2)}",
-                                  ),
-                                ],
-                              ),
-
-                              const Icon(
-                                Icons.compare_arrows,
-                                color: Colors.grey,
-                              ),
-
-                              Column(
-                                children: [
-                                  const Text(
-                                    "Physical",
-
-                                    style: TextStyle(
-                                      fontSize: 12,
-
-                                      color: Colors.grey,
-
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-
-                                  Text("Qty: ${targetItem.physicalQty}"),
-
-                                  Text(
-                                    "\$${targetItem.physicalPrice.toStringAsFixed(2)}",
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-
-                          // ==================================================
-                          // HIDE ACTIONS IF SESSION IS CLOSED
-                          // ==================================================
-                          if (!widget.readOnly && !targetItem.isApproved) ...[
-                            const Divider(height: 16),
-
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-
-                              children: [
-                                TextButton.icon(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.orange,
-                                    size: 18,
-                                  ),
-
-                                  label: const Text("Adjust Counts"),
-
-                                  onPressed:
-                                      () => _displayAdjustmentPopup(
-                                        context,
-                                        targetItem,
-                                        notifierAction,
-                                      ),
-                                ),
-
-                                const SizedBox(width: 8),
-
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-
-                                    foregroundColor: Colors.white,
-                                  ),
-
-                                  icon: const Icon(Icons.check, size: 16),
-
-                                  label: const Text("Approve"),
-
-                                  onPressed:
-                                      () => _displayConfirmationPopup(
-                                        context,
-                                        targetItem,
-                                        notifierAction,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
+                  return AuditConfirmItemTile(
+                    item: targetItem,
+                    readOnly: widget.readOnly,
+                    onAdjust:
+                        () => _displayAdjustmentPopup(
+                          context,
+                          targetItem,
+                          notifierAction,
+                        ),
+                    onApprove:
+                        () => _displayConfirmationPopup(
+                          context,
+                          targetItem,
+                          notifierAction,
+                        ),
                   );
                 },
               ),

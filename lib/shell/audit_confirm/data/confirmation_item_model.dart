@@ -11,6 +11,12 @@ class ConfirmationItemModel {
   final double mismatchValue;
   final bool isApproved;
 
+  // NEW FIELDS
+  final String systemRack;
+  final String physicalRack;
+  final double systemWPrice;
+  final double physicalWPrice;
+
   ConfirmationItemModel({
     required this.id,
     required this.productId,
@@ -23,7 +29,50 @@ class ConfirmationItemModel {
     required this.mismatchQty,
     required this.mismatchValue,
     required this.isApproved,
+
+    // NEW REQUIRED PARAMETERS
+    required this.systemRack,
+    required this.physicalRack,
+    required this.systemWPrice,
+    required this.physicalWPrice,
   });
+
+  // CLEAN COPYWITH HELPER FOR LOCAL STATE MUTATIONS
+  ConfirmationItemModel copyWith({
+    int? id,
+    int? productId,
+    String? productName,
+    String? barcode,
+    int? systemQty,
+    int? physicalQty,
+    double? systemPrice,
+    double? physicalPrice,
+    double? mismatchQty,
+    double? mismatchValue,
+    bool? isApproved,
+    String? systemRack,
+    String? physicalRack,
+    double? systemWPrice,
+    double? physicalWPrice,
+  }) {
+    return ConfirmationItemModel(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      productName: productName ?? this.productName,
+      barcode: barcode ?? this.barcode,
+      systemQty: systemQty ?? this.systemQty,
+      physicalQty: physicalQty ?? this.physicalQty,
+      systemPrice: systemPrice ?? this.systemPrice,
+      physicalPrice: physicalPrice ?? this.physicalPrice,
+      mismatchQty: mismatchQty ?? this.mismatchQty,
+      mismatchValue: mismatchValue ?? this.mismatchValue,
+      isApproved: isApproved ?? this.isApproved,
+      systemRack: systemRack ?? this.systemRack,
+      physicalRack: physicalRack ?? this.physicalRack,
+      systemWPrice: systemWPrice ?? this.systemWPrice,
+      physicalWPrice: physicalWPrice ?? this.physicalWPrice,
+    );
+  }
 
   factory ConfirmationItemModel.fromJson(Map<String, dynamic> json) {
     double parseDouble(dynamic value) =>
@@ -31,7 +80,6 @@ class ConfirmationItemModel {
     int parseInt(dynamic value) =>
         (double.tryParse(value?.toString() ?? '0') ?? 0.0).round();
 
-    // Determine status from database flags
     final approved =
         json['is_approved'] == 1 ||
         json['is_approved'] == true ||
@@ -42,22 +90,27 @@ class ConfirmationItemModel {
       productId: int.tryParse(json['product_id'].toString()) ?? 0,
       productName: (json['product_name'] ?? 'Unknown Item').toString().trim(),
       barcode:
-          (json['barcode'] ?? json['sku'] ?? json['upc'] ?? 'N/A')
+          (json['product_code'] ?? json['barcode'] ?? json['sku'] ?? 'N/A')
               .toString()
               .trim(),
-      systemQty: parseInt(
-        json['sys_qty'] ?? json['system_qty'] ?? json['quantity_instock'],
-      ),
+      systemQty: parseInt(json['sys_qty'] ?? json['system_qty']),
       physicalQty: parseInt(json['phy_qty'] ?? json['physical_qty'] ?? 0),
-      systemPrice: parseDouble(
-        json['sys_price'] ?? json['system_price'] ?? json['current_rate'],
-      ),
+      systemPrice: parseDouble(json['sys_price'] ?? json['system_price']),
       physicalPrice: parseDouble(
         json['phy_price'] ?? json['physical_price'] ?? 0.0,
       ),
       mismatchQty: parseDouble(json['mismatch_qty']),
       mismatchValue: parseDouble(json['mismatch_value']),
       isApproved: approved,
+
+      systemRack: (json['sys_rack'] ?? 'N/A').toString().trim(),
+      physicalRack: (json['phy_rack'] ?? 'N/A').toString().trim(),
+      systemWPrice: parseDouble(
+        json['sys_wprice'] ?? json['sys_wholesale_price'],
+      ),
+      physicalWPrice: parseDouble(
+        json['phy_wprice'] ?? json['phy_wholesale_price'],
+      ),
     );
   }
 }

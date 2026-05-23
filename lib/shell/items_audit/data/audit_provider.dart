@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,25 +7,27 @@ import '../../../shell/network/websocket_service.dart';
 import 'audit_item_model.dart';
 import 'audit_session_model.dart';
 
-final auditProvider =
-    StateNotifierProvider<AuditNotifier, AuditState>(
-  (ref) => AuditNotifier(),
-);
+final auditProvider = StateNotifierProvider<AuditNotifier, AuditState>((ref) {
+  final notifier = AuditNotifier();
+
+  // Clean up the stream subscription when the user leaves the Audit Screen
+  ref.onDispose(() {
+    notifier.disposeModule();
+  });
+
+  return notifier;
+});
 
 class AuditState {
   final bool loading;
-
   final AuditSessionModel? session;
-
   final List<AuditItemModel> items;
-
   final List<AuditItemModel> filteredItems;
-
   final String searchQuery;
-
   final String? error;
 
   AuditState({
+    key,
     this.loading = false,
     this.session,
     this.items = const [],
@@ -45,23 +48,27 @@ class AuditState {
       loading: loading ?? this.loading,
       session: session ?? this.session,
       items: items ?? this.items,
-      filteredItems:
-          filteredItems ?? this.filteredItems,
-      searchQuery:
-          searchQuery ?? this.searchQuery,
+      filteredItems: filteredItems ?? this.filteredItems,
+      searchQuery: searchQuery ?? this.searchQuery,
       error: error,
     );
   }
 }
 
 class AuditNotifier extends StateNotifier<AuditState> {
+  StreamSubscription<Map<String, dynamic>>? _wsSubscription;
+
   AuditNotifier() : super(AuditState()) {
     _listenWS();
   }
 
   void _listenWS() {
-    WebSocketService.instance.onMessage = (data) {
-      debugPrint("AUDIT WS => $data");
+    // Cancel any older dangling subscriptions
+    _wsSubscription?.cancel();
+
+    // Use the reliable broadcast stream so multiple screens don't step on each other
+    _wsSubscription = WebSocketService.instance.messageStream.listen((data) {
+      debugPrint("AUDIT SCREEN WS => ${data['action']}");
 
       /// START AUDIT
       if (data['action'] == 'start_audit') {
@@ -72,7 +79,7 @@ class AuditNotifier extends StateNotifier<AuditState> {
 
       /// GET AUDIT ITEMS
       if (data['action'] == 'get_audit_items') {
-        final List list = data['data'];
+        final List list = data['data'] ?? [];
         final items = list.map((e) => AuditItemModel.fromJson(e)).toList();
 
         state = state.copyWith(
@@ -80,11 +87,16 @@ class AuditNotifier extends StateNotifier<AuditState> {
           items: items,
           filteredItems: items,
         );
+
+        // Re-apply search query if there was one active during an live update
+        if (state.searchQuery.isNotEmpty) {
+          searchItems(state.searchQuery);
+        }
       }
 
-      /// UPDATE ITEM
+      /// UPDATE ITEM ACKNOWLEDGEMENT FROM SERVER
       if (data['action'] == 'update_audit_item') {
-        debugPrint("ITEM UPDATED");
+        debugPrint("ITEM UPDATED SUCCESSFULLY ON SERVER");
       }
 
       /// COMPLETE AUDIT
@@ -92,52 +104,46 @@ class AuditNotifier extends StateNotifier<AuditState> {
         state = AuditState();
         debugPrint("AUDIT COMPLETED");
       }
-    };
+    });
   }
 
   /// START AUDIT
   void startAudit() {
     state = state.copyWith(loading: true);
-    WebSocketService.instance.send({
-      "action": "start_audit",
-      "payload": {}
-    });
+    WebSocketService.instance.send({"action": "start_audit", "payload": {}});
   }
 
-  /// FETCH ITEMS
+  /// FETCH ITEMS (Explicitly asks for everything, no mismatch filtering)
   void getAuditItems(int auditId) {
     WebSocketService.instance.send({
       "action": "get_audit_items",
       "payload": {
         "audit_id": auditId,
-      }
+        "mismatch_only":
+            false, // explicitly request all items to add physical counts
+      },
     });
   }
 
-  /// SEARCH
+  /// SEARCH LOCAL LIST
   void searchItems(String query) {
     final q = query.toLowerCase().trim();
 
     if (q.isEmpty) {
-      state = state.copyWith(
-        searchQuery: '',
-        filteredItems: state.items,
-      );
+      state = state.copyWith(searchQuery: '', filteredItems: state.items);
       return;
     }
 
-    final filtered = state.items.where((item) {
-      return item.productName.toLowerCase().contains(q) ||
-          item.productCode.toLowerCase().contains(q);
-    }).toList();
+    final filtered =
+        state.items.where((item) {
+          return item.productName.toLowerCase().contains(q) ||
+              item.productCode.toLowerCase().contains(q);
+        }).toList();
 
-    state = state.copyWith(
-      searchQuery: query,
-      filteredItems: filtered,
-    );
+    state = state.copyWith(searchQuery: query, filteredItems: filtered);
   }
 
-  /// UPDATE ITEM (With new Wholesale and Rack fields)
+  /// UPDATE ITEM (Local Optimistic State Update + Server Send)
   void updateAuditItem({
     required int productId,
     required double phyQty,
@@ -148,7 +154,6 @@ class AuditNotifier extends StateNotifier<AuditState> {
     final auditId = state.session?.auditId;
     if (auditId == null) return;
 
-    // Outbound payload matching your specific key formatting
     WebSocketService.instance.send({
       "action": "update_audit_item",
       "payload": {
@@ -158,38 +163,38 @@ class AuditNotifier extends StateNotifier<AuditState> {
         "phyPrice": phyPrice,
         "phyWholesalePrice": phyWholesalePrice,
         "phyRack": phyRack,
-      }
+      },
     });
 
-    /// LOCAL STATE UPDATE
-    final updated = state.items.map((item) {
-      if (item.productId == productId) {
-        final mismatchQty = double.parse(
-          (phyQty - item.sysQty).toStringAsFixed(2),
-        );
+    /// Update local list immediately so the UI snaps instantly without waiting on network
+    final updated =
+        state.items.map((item) {
+          if (item.productId == productId) {
+            final mismatchQty = double.parse(
+              (phyQty - item.sysQty).toStringAsFixed(2),
+            );
 
-        // Keep existing calculation using base retail price matching your original logic
-        final mismatchValue = double.parse(
-          ((phyQty * phyPrice) - (item.sysQty * item.sysPrice))
-              .toStringAsFixed(2),
-        );
+            final mismatchValue = double.parse(
+              ((phyQty * phyPrice) - (item.sysQty * item.sysPrice))
+                  .toStringAsFixed(2),
+            );
 
-        return item.copyWith(
-          phyQty: phyQty,
-          phyPrice: phyPrice,
-          phyWholesalePrice: phyWholesalePrice,
-          phyRack: phyRack,
-          mismatchQty: mismatchQty,
-          mismatchValue: mismatchValue,
-        );
-      }
-      return item;
-    }).toList();
+            return item.copyWith(
+              phyQty: phyQty,
+              phyPrice: phyPrice,
+              phyWholesalePrice: phyWholesalePrice,
+              phyRack: phyRack,
+              mismatchQty: mismatchQty,
+              mismatchValue: mismatchValue,
+            );
+          }
+          return item;
+        }).toList();
 
-    state = state.copyWith(
-      items: updated,
-      filteredItems: updated,
-    );
+    state = state.copyWith(items: updated);
+
+    // Refresh search filter presentation array
+    searchItems(state.searchQuery);
   }
 
   /// COMPLETE AUDIT
@@ -199,9 +204,11 @@ class AuditNotifier extends StateNotifier<AuditState> {
 
     WebSocketService.instance.send({
       "action": "complete_audit",
-      "payload": {
-        "audit_id": auditId,
-      }
+      "payload": {"audit_id": auditId},
     });
+  }
+
+  void disposeModule() {
+    _wsSubscription?.cancel();
   }
 }

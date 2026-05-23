@@ -12,6 +12,10 @@ class WebSocketService {
   static final WebSocketService instance = WebSocketService._();
 
   WebSocketChannel? _channel;
+// --- ADD THIS BLOCK FOR BULLETPROOF STREAM BROADCASTING ---
+  final StreamController<Map<String, dynamic>> _messageController = StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get messageStream => _messageController.stream;
+  // ---------------------------------------------------------
 
   final ValueNotifier<bool> isConnectedNotifier = ValueNotifier(false);
 
@@ -34,6 +38,7 @@ class WebSocketService {
 
     _isConnecting = true;
     _manuallyDisconnected = false;
+    
 
     try {
       final token = await StorageService.getToken();
@@ -60,9 +65,13 @@ class WebSocketService {
           final raw = event.toString().trim();
 
           if (raw.isEmpty) return;
+          
 
           try {
             final decoded = jsonDecode(raw);
+            if (decoded is Map<String, dynamic>) {
+              _messageController.add(decoded);
+            }
 
             if (onMessage != null) {
               onMessage!(decoded);

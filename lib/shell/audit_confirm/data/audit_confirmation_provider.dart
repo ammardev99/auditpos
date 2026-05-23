@@ -1,28 +1,47 @@
+import 'dart:async'; // Add this import for StreamSubscription
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../shell/network/websocket_service.dart'; // Adjust path to match your layout
+import '../../../shell/network/websocket_service.dart'; 
 import 'audit_confirmation_state.dart';
 import 'confirmation_item_model.dart';
 
 final auditConfirmationProvider = StateNotifierProvider.family<
-  AuditConfirmationNotifier,
-  AuditConfirmationState,
-  int
+    AuditConfirmationNotifier,
+    AuditConfirmationState,
+    int
 >((ref, auditId) {
-  return AuditConfirmationNotifier(auditId: auditId);
+  final notifier = AuditConfirmationNotifier(auditId: auditId);
+  
+  // Clean up subscription automatically when leaving the screen or changing sessions
+  ref.onDispose(() {
+    notifier.disposeModule();
+  });
+
+  return notifier;
 });
 
 class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
   final int auditId;
+  StreamSubscription<Map<String, dynamic>>? _wsSubscription;
 
   AuditConfirmationNotifier({required this.auditId})
-    : super(AuditConfirmationState());
+      : super(AuditConfirmationState());
 
   void initializeModule() {
     state = state.copyWith(isLoading: true);
-    final previousGlobalCallback = WebSocketService.instance.onMessage;
 
-    WebSocketService.instance.onMessage = (data) {
+    // Cancel old subscription if initialize gets called multiple times
+    _wsSubscription?.cancel();
+
+    // Subscribe to our brand new stream controller broadcast channel
+    _wsSubscription = WebSocketService.instance.messageStream.listen((data) {
       final String? actionReceived = data['action'];
+
+      // CRITICAL CHECK: Look closely at your raw logs: your server sends back "audit_id": 88
+      // If the incoming message doesn't match this notifier's instance ID, drop it instantly!
+      final int? incomingAuditId = int.tryParse(data['audit_id']?.toString() ?? '');
+      if (incomingAuditId != null && incomingAuditId != auditId) {
+        return; // Ignore this message silently, it belongs to an older/different screen session
+      }
 
       // Catch backend list delivery
       if (actionReceived == 'get_audit_items') {
@@ -32,16 +51,13 @@ class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
         state = state.copyWith(isLoading: false, items: parsed);
       }
 
-      // Automatically refresh when server states change or confirm a row approval
+      // Automatically refresh when updates or row confirmations happen for THIS session
       if (actionReceived == 'update_audit_item' ||
-          actionReceived == 'audit_item_approved') {
+          actionReceived == 'audit_item_approved' ||
+          actionReceived == 'approve_audit_item') {
         fetchDataFromServer();
       }
-
-      if (previousGlobalCallback != null) {
-        previousGlobalCallback(data);
-      }
-    };
+    });
 
     fetchDataFromServer();
   }
@@ -51,11 +67,14 @@ class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
       "action": "get_audit_items",
       "payload": {
         "audit_id": auditId,
-        "mismatch_only":
-            state
-                .showMismatchesOnly, // Passes boolean directly to your PHP script
+        "mismatch_only": state.showMismatchesOnly,
       },
     });
+  }
+
+  // Closes out the pipeline allocation safely
+  void disposeModule() {
+    _wsSubscription?.cancel();
   }
 
   void toggleServerFilter() {
@@ -70,7 +89,6 @@ class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
     state = state.copyWith(searchQuery: text);
   }
 
-  // Sends your backend JS equivalent action request
   void approveSingleRowItem(int productId) {
     WebSocketService.instance.send({
       "action": "approve_audit_item",
@@ -78,11 +96,11 @@ class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
     });
   }
 
-  // Send an adjustment down the wire
   void submitItemAdjustment({
     required int productId,
     required int qty,
     required double price,
+    double? wPrice,
   }) {
     WebSocketService.instance.send({
       "action": "update_audit_item",
@@ -91,6 +109,7 @@ class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
         "product_id": productId,
         "phyQty": qty,
         "phyPrice": price,
+        if (wPrice != null) "phyWPrice": wPrice,
       },
     });
   }

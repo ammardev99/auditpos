@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../data/audit_session_history_model.dart';
 
 class AuditSessionTile extends StatelessWidget {
@@ -16,7 +15,6 @@ class AuditSessionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Generate state color variations
     Color statusColor;
     switch (session.status) {
       case "approved":
@@ -26,7 +24,7 @@ class AuditSessionTile extends StatelessWidget {
         statusColor = Colors.orange;
         break;
       default:
-        statusColor = Colors.blue; // "open" / dynamic status configuration
+        statusColor = Colors.blue;
     }
 
     return Card(
@@ -118,6 +116,7 @@ class AuditSessionTile extends StatelessWidget {
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       "Started: ${session.createdAt}",
@@ -136,6 +135,53 @@ class AuditSessionTile extends StatelessWidget {
                         ),
                       ),
                     ],
+                    const SizedBox(height: 6),
+                    // =========================================
+                    // ADDED: AUDITOR NAME ROW
+                    // =========================================
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Icon(
+                          Icons.person_outline,
+                          size: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "Auditor: ${session.openByName}",
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+
+                        if (session.isClosed &&
+                            session.closedByName != null) ...[
+                          const SizedBox(height: 3),
+                          const SizedBox(width: 20),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.lock_person_outlined,
+                                size: 14,
+                                color: Colors.red.shade400,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                "Closed by: ${session.closedByName}",
+                                style: TextStyle(
+                                  color: Colors.red.shade700,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
                   ],
                 ),
 
@@ -186,30 +232,24 @@ class AuditSessionTile extends StatelessWidget {
               ],
             ),
 
-            // Row 3: Context action buttons matrix (matching the developer's display logic)
+            // Row 3: Context action buttons matrix
             if (!session.isClosed && session.status != 'approved') ...[
               const SizedBox(height: 14),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  // Close Session button is displayed as long as it's not approved and not closed
-                  if (!session.isClosed)
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.red),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-
-                      icon: const Icon(Icons.lock_clock, size: 16),
-
-                      label: const Text("Close Session"),
-
-                      onPressed: onCloseSession,
                     ),
-                  // If it's ready and completed, provide immediate option to Approve alongside it
+                    icon: const Icon(Icons.lock_clock, size: 16),
+                    label: const Text("Close Session"),
+                    onPressed: onCloseSession,
+                  ),
                   if (session.status == 'completed') ...[
                     const SizedBox(width: 8),
                     ElevatedButton.icon(

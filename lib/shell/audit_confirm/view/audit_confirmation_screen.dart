@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zi_core/zi_core_io.dart';
 import '../data/audit_confirmation_provider.dart';
 import '../data/confirmation_item_model.dart';
 import 'confirm_tile.dart';
@@ -28,6 +29,7 @@ class AuditConfirmationScreen extends ConsumerStatefulWidget {
 class _AuditConfirmationScreenState
     extends ConsumerState<AuditConfirmationScreen> {
   final TextEditingController _searchFieldController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -52,23 +54,11 @@ class _AuditConfirmationScreenState
     );
     final visibleList = stateWatcher.computedVisibleItems;
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Confirm Audit: ${widget.auditNo}"),
+      appBar: ZiAppBarB(
+        title: "Confirm Audit: ${widget.auditNo}",
+        subtitle:
             // READ ONLY BADGE
-            if (widget.readOnly)
-              const Text(
-                "READ ONLY MODE",
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.orange,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-          ],
-        ),
+            widget.readOnly ? "READ ONLY MODE" : null,
 
         actions: [
           IconButton(

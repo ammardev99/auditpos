@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:auditpos/shell/audit_confirm/view/audit_confirmation_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zi_core/zi_core_io.dart';
 import '../../network/websocket_service.dart';
 import '../data/audit_sessions_provider.dart';
 import 'audit_session_tile.dart';
@@ -46,8 +47,8 @@ class _AuditSessionsHScreenState extends ConsumerState<AuditSessionsHScreen> {
 
       builder: (context, connected, _) {
         return Scaffold(
-          appBar: AppBar(
-            title: Text("Audit Sessions (${state.sessions.length})"),
+          appBar: ZiAppBarB(
+            title: "Audit Sessions (${state.sessions.length})",
 
             actions: [
               // =========================================
@@ -55,7 +56,6 @@ class _AuditSessionsHScreenState extends ConsumerState<AuditSessionsHScreen> {
               // =========================================
               Padding(
                 padding: const EdgeInsets.only(right: 10),
-
                 child: Row(
                   children: [
                     Icon(
@@ -67,7 +67,7 @@ class _AuditSessionsHScreenState extends ConsumerState<AuditSessionsHScreen> {
                     const SizedBox(width: 6),
 
                     Text(
-                      connected ? "WS Connected" : "WS Disconnected",
+                      connected ? "WS" : "WS",
 
                       style: const TextStyle(fontSize: 12),
                     ),
@@ -189,7 +189,12 @@ class _AuditSessionsHScreenState extends ConsumerState<AuditSessionsHScreen> {
                                           Navigator.pop(context);
                                         },
 
-                                        child: const Text("Confirm Lock"),
+                                        child: Text(
+                                          "Confirm & Lock",
+                                          style: TextStyle(
+                                            color: ZiColors.white,
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),

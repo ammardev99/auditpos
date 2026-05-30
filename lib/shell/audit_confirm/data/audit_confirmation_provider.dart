@@ -1,30 +1,30 @@
 import 'dart:async'; // Add this import for StreamSubscription
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../shell/network/websocket_service.dart'; 
+import '../../../shell/network/websocket_service.dart';
 import 'audit_confirmation_state.dart';
 import 'confirmation_item_model.dart';
 
-final auditConfirmationProvider = StateNotifierProvider.family<
-    AuditConfirmationNotifier,
-    AuditConfirmationState,
-    int
->((ref, auditId) {
-  final notifier = AuditConfirmationNotifier(auditId: auditId);
-  
-  // Clean up subscription automatically when leaving the screen or changing sessions
-  ref.onDispose(() {
-    notifier.disposeModule();
-  });
+// Change to autoDispose.family
+final auditConfirmationProvider = StateNotifierProvider.family
+    .autoDispose<AuditConfirmationNotifier, AuditConfirmationState, int>((
+      ref,
+      auditId,
+    ) {
+      final notifier = AuditConfirmationNotifier(auditId: auditId);
 
-  return notifier;
-});
+      ref.onDispose(() {
+        notifier.disposeModule();
+      });
+
+      return notifier;
+    });
 
 class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
   final int auditId;
   StreamSubscription<Map<String, dynamic>>? _wsSubscription;
 
   AuditConfirmationNotifier({required this.auditId})
-      : super(AuditConfirmationState());
+    : super(AuditConfirmationState());
 
   void initializeModule() {
     state = state.copyWith(isLoading: true);
@@ -38,7 +38,9 @@ class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
 
       // CRITICAL CHECK: Look closely at your raw logs: your server sends back "audit_id": 88
       // If the incoming message doesn't match this notifier's instance ID, drop it instantly!
-      final int? incomingAuditId = int.tryParse(data['audit_id']?.toString() ?? '');
+      final int? incomingAuditId = int.tryParse(
+        data['audit_id']?.toString() ?? '',
+      );
       if (incomingAuditId != null && incomingAuditId != auditId) {
         return; // Ignore this message silently, it belongs to an older/different screen session
       }

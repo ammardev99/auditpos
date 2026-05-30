@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zi_core/zi_core_io.dart';
 import '../data/audit_session_history_model.dart';
 
 class AuditSessionHTile extends StatelessWidget {
@@ -128,7 +129,7 @@ class AuditSessionHTile extends StatelessWidget {
                     if (session.completedAt != null) ...[
                       const SizedBox(height: 3),
                       Text(
-                        "Completed: ${session.completedAt}",
+                        "Ended:   ${session.completedAt}",
                         style: TextStyle(
                           color: Colors.grey.shade600,
                           fontSize: 13,
@@ -261,8 +262,20 @@ class AuditSessionHTile extends StatelessWidget {
                         ),
                       ),
                       icon: const Icon(Icons.check_circle_outline, size: 16),
-                      label: const Text("Approve"),
-                      onPressed: onApprove,
+                      label: const Text("Approve All"),
+                      onPressed: () async {
+                        // 1. Show the confirmation dialog
+                        bool? isConfirmed = await ZiConfirmationUser.confirm(
+                          title:
+                              "Confirm to approve all?", // You can customize this title
+                          context: context,
+                        );
+
+                        // 2. Only call onApprove if the user clicks 'Yes' (returns true)
+                        if (isConfirmed == true) {
+                          onApprove();
+                        }
+                      },
                     ),
                   ],
                 ],

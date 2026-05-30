@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zi_core/zi_core_io.dart';
 
 import 'shell/network/server_ip_screen.dart';
 
 void main() {
+  ziCoreInit(beta: true);
+  AppConfig.environment = ZiEnvironment.development;
+  ZiColors.override(ZiColorOverrides(primary: const Color(0xFFFF850C)));
+
   runApp(ProviderScope(child: const AuditApp()));
 }
 
@@ -15,11 +20,8 @@ class AuditApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Audit App',
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+      theme: ThemeData(primaryColor: ZiColors.primary),
       home: const ServerIpScreen(),
-      // home: Scaffold(
-      //   body: Text("data"),
-      // ),
     );
   }
 }

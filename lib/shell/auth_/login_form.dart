@@ -7,6 +7,7 @@ import 'package:auditpos/shell/network/storage_service.dart';
 import 'package:auditpos/shell/network/websocket_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:zi_core/zi_core_io.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -63,9 +64,7 @@ class _LoginFormState extends State<LoginForm> {
       } else {
         showMessage(data["message"] ?? "Login failed");
       }
-    }
-
-    on DioException catch (e) {
+    } on DioException catch (e) {
       String message = "Network error";
 
       switch (e.type) {
@@ -88,9 +87,7 @@ class _LoginFormState extends State<LoginForm> {
       }
 
       showMessage(message);
-    }
-
-    catch (e) {
+    } catch (e) {
       showMessage("Unexpected error: $e");
     }
 
@@ -100,9 +97,7 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   void showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -128,16 +123,16 @@ class _LoginFormState extends State<LoginForm> {
         ),
 
         const SizedBox(height: 25),
-
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: ElevatedButton(
-            onPressed: loading ? null : login,
-            child: loading
-                ? const CircularProgressIndicator()
-                : const Text("LOGIN"),
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: ZiButtonB(
+                label: "LOGIN",
+                loading: loading,
+                action: loading ? null : login,
+              ),
+            ),
+          ],
         ),
       ],
     );

@@ -7,17 +7,17 @@ import '../../../shell/network/websocket_service.dart';
 import 'audit_item_model.dart';
 import 'audit_session_model.dart';
 
-final auditProvider = StateNotifierProvider<AuditNotifier, AuditState>((ref) {
+// Change to autoDispose so the state resets when you leave the AuditScreen
+final auditProvider = StateNotifierProvider.autoDispose<AuditNotifier, AuditState>((ref) {
   final notifier = AuditNotifier();
-
-  // Clean up the stream subscription when the user leaves the Audit Screen
+  
+  // This is the clean, correct way to dispose of the subscription
   ref.onDispose(() {
     notifier.disposeModule();
   });
 
   return notifier;
 });
-
 class AuditState {
   final bool loading;
   final AuditSessionModel? session;
@@ -211,4 +211,14 @@ class AuditNotifier extends StateNotifier<AuditState> {
   void disposeModule() {
     _wsSubscription?.cancel();
   }
+
+  void reset() {
+  // Reset the state to the initial state (empty list, null session, etc.)
+  state =  AuditState(
+    items: [],
+    filteredItems: [],
+    session: null,
+    loading: false,
+  );
+}
 }

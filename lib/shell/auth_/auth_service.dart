@@ -1,14 +1,13 @@
-import 'package:auditpos/shell/auth_/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../auth_/login_screen.dart';
 import '../network/websocket_service.dart';
-
 class AuthService {
   final storage = const FlutterSecureStorage();
 
   Future<void> logout(BuildContext context) async {
-    await storage.delete(key: "token");
+    await storage.deleteAll();
 
     WebSocketService.instance.disconnect();
 

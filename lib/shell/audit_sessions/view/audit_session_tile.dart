@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../data/audit_session_history_model.dart';
 
-class AuditSessionTile extends StatelessWidget {
+class AuditSessionHTile extends StatelessWidget {
   final AuditSessionHistoryModel session;
   final VoidCallback onApprove;
   final VoidCallback onCloseSession;
 
-  const AuditSessionTile({
+  const AuditSessionHTile({
     super.key,
     required this.session,
     required this.onApprove,

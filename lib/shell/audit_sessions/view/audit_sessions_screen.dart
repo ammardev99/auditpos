@@ -5,15 +5,15 @@ import '../../network/websocket_service.dart';
 import '../data/audit_sessions_provider.dart';
 import 'audit_session_tile.dart';
 
-class AuditSessionsScreen extends ConsumerStatefulWidget {
-  const AuditSessionsScreen({super.key});
+class AuditSessionsHScreen extends ConsumerStatefulWidget {
+  const AuditSessionsHScreen({super.key});
 
   @override
-  ConsumerState<AuditSessionsScreen> createState() =>
-      _AuditSessionsScreenState();
+  ConsumerState<AuditSessionsHScreen> createState() =>
+      _AuditSessionsHScreenState();
 }
 
-class _AuditSessionsScreenState extends ConsumerState<AuditSessionsScreen> {
+class _AuditSessionsHScreenState extends ConsumerState<AuditSessionsHScreen> {
   @override
   void initState() {
     super.initState();
@@ -123,7 +123,7 @@ class _AuditSessionsScreenState extends ConsumerState<AuditSessionsScreen> {
                           );
                         },
 
-                        child: AuditSessionTile(
+                        child: AuditSessionHTile(
                           session: session,
 
                           onApprove: () {

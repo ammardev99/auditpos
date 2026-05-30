@@ -1,5 +1,6 @@
 import 'package:auditpos/shell/auth_/login_screen.dart';
 import 'package:auditpos/shell/network/app_constants.dart';
+import 'package:auditpos/shell/network/server_model.dart';
 import 'package:flutter/material.dart';
 
 class ServerIpScreen extends StatefulWidget {
@@ -10,21 +11,33 @@ class ServerIpScreen extends StatefulWidget {
 }
 
 class _ServerIpScreenState extends State<ServerIpScreen> {
+  final TextEditingController nameController = TextEditingController(
+    text: "php_mart",
+  );
+
+  final TextEditingController basePathController = TextEditingController(
+    text: "php_mart",
+  );
+
   final TextEditingController ipController = TextEditingController(
-    text: "192.168.1.17",
+    text: "192.168.10.22",
   );
 
   void continueToLogin() {
+    final name = nameController.text.trim();
+    final basePath = basePathController.text.trim();
     final ip = ipController.text.trim();
 
-    if (ip.isEmpty) {
+    if (name.isEmpty || basePath.isEmpty || ip.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text("Enter server IP")));
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
       return;
     }
 
-    AppConstants.iP = ip;
+    final pos = PosConfig(name: name, ip: ip, basePath: basePath);
+
+    AppConstants.setPos(pos);
 
     Navigator.pushReplacement(
       context,
@@ -33,12 +46,20 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
   }
 
   @override
+  void dispose() {
+    nameController.dispose();
+    basePathController.dispose();
+    ipController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: SizedBox(
-            width: 350,
+            width: 380,
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -55,17 +76,44 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
 
                   const SizedBox(height: 30),
 
+                  /// POS NAME
                   TextField(
-                    controller: ipController,
+                    controller: nameController,
                     decoration: const InputDecoration(
-                      labelText: "Server IP Address",
+                      labelText: "POS Name",
                       border: OutlineInputBorder(),
-                      hintText: "192.168.1.18",
+                      hintText: "php_mart",
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
+                  /// BASE PATH
+                  TextField(
+                    controller: basePathController,
+                    decoration: const InputDecoration(
+                      labelText: "Base Path",
+                      border: OutlineInputBorder(),
+                      hintText: "v2/php_mart",
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// SERVER IP
+                  TextField(
+                    controller: ipController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: "Server IP Address",
+                      border: OutlineInputBorder(),
+                      hintText: "192.168.1.16",
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// CONTINUE BUTTON
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -74,19 +122,6 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
                       child: const Text("Continue"),
                     ),
                   ),
-                  // SizedBox(
-                  //   width: double.infinity,
-                  //   height: 50,
-                  //   child: ElevatedButton(
-                  //     onPressed: () {
-                  //       Navigator.pushReplacement(
-                  //         context,
-                  //         MaterialPageRoute(builder: (_) => DashboardScreen()),
-                  //       );
-                  //     },
-                  //     child: const Text("da"),
-                  //   ),
-                  // ),
                 ],
               ),
             ),

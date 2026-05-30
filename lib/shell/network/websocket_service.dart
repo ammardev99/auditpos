@@ -12,8 +12,9 @@ class WebSocketService {
   static final WebSocketService instance = WebSocketService._();
 
   WebSocketChannel? _channel;
-// --- ADD THIS BLOCK FOR BULLETPROOF STREAM BROADCASTING ---
-  final StreamController<Map<String, dynamic>> _messageController = StreamController<Map<String, dynamic>>.broadcast();
+  // --- ADD THIS BLOCK FOR BULLETPROOF STREAM BROADCASTING ---
+  final StreamController<Map<String, dynamic>> _messageController =
+      StreamController<Map<String, dynamic>>.broadcast();
   Stream<Map<String, dynamic>> get messageStream => _messageController.stream;
   // ---------------------------------------------------------
 
@@ -30,7 +31,7 @@ class WebSocketService {
   bool get isConnected => _channel != null;
 
   /// CONNECT
-  Future<void> connect() async {
+  Future<void> connect({String? token}) async {
     if (_isConnecting || _channel != null) {
       debugPrint("WS ALREADY CONNECTED / CONNECTING");
       return;
@@ -38,18 +39,17 @@ class WebSocketService {
 
     _isConnecting = true;
     _manuallyDisconnected = false;
-    
 
     try {
-      final token = await StorageService.getToken();
+      final finalToken = token ?? await StorageService.getToken();
 
-      if (token == null || token.isEmpty) {
+      if (finalToken == null || finalToken.isEmpty) {
         debugPrint("WS TOKEN NOT FOUND");
         _isConnecting = false;
         return;
       }
 
-      final url = "${AppConstants.wsUrl}?token=$token";
+      final url = "${AppConstants.wsUrl}?token=$finalToken";
 
       debugPrint("WS CONNECTING => $url");
 
@@ -59,16 +59,14 @@ class WebSocketService {
         (event) {
           debugPrint("WS RAW => $event");
 
-          /// SAFE GUARDS
           if (event == null) return;
 
           final raw = event.toString().trim();
-
           if (raw.isEmpty) return;
-          
 
           try {
             final decoded = jsonDecode(raw);
+
             if (decoded is Map<String, dynamic>) {
               _messageController.add(decoded);
             }
@@ -81,36 +79,29 @@ class WebSocketService {
             debugPrint("RAW INVALID => $raw");
           }
         },
-
         onDone: () {
           debugPrint("WS DISCONNECTED");
-
           _cleanup();
 
           if (!_manuallyDisconnected) {
             _scheduleReconnect();
           }
         },
-
         onError: (e) {
           debugPrint("WS ERROR => $e");
-
           _cleanup();
 
           if (!_manuallyDisconnected) {
             _scheduleReconnect();
           }
         },
-
         cancelOnError: true,
       );
 
       debugPrint("WS CONNECTED");
-
       isConnectedNotifier.value = true;
     } catch (e) {
       debugPrint("WS CONNECT FAILED => $e");
-
       _cleanup();
 
       if (!_manuallyDisconnected) {

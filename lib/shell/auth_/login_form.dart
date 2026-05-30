@@ -1,13 +1,12 @@
 import 'dart:io';
 
+import 'package:auditpos/shell/dashboard/presentation/dashboard_screen.dart';
+import 'package:auditpos/shell/network/app_constants.dart';
+import 'package:auditpos/shell/network/dio_client.dart';
+import 'package:auditpos/shell/network/storage_service.dart';
+import 'package:auditpos/shell/network/websocket_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-
-import '../network/app_constants.dart';
-import '../network/dio_client.dart';
-import '../network/storage_service.dart';
-import '../network/websocket_service.dart';
-import 'package:auditpos/shell/dashboard/presentation/dashboard_screen.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -26,8 +25,6 @@ class _LoginFormState extends State<LoginForm> {
     setState(() => loading = true);
 
     try {
-      debugPrint("LOGIN START");
-
       final response = await DioClient.dio.post(
         AppConstants.loginUrl,
         data: {
@@ -36,81 +33,64 @@ class _LoginFormState extends State<LoginForm> {
         },
       );
 
-      debugPrint("RAW RESPONSE => ${response.data}");
-
       final data = response.data;
 
       if (data["status"] == "success") {
-        final token = data["data"]["token"];
+        final user = data["data"];
 
-        debugPrint("LOGIN SUCCESS TOKEN => $token");
+        final token = user["token"];
+        final username = user["username"];
+        final userId = user["user_id"];
 
+        // ✅ SAVE SESSION
         await StorageService.saveToken(token);
 
-        await WebSocketService.instance.connect();
+        await StorageService.saveUser(
+          name: username,
+          email: "", // backend not sending email
+          userId: userId.toString(),
+        );
+
+        // ✅ CONNECT WEBSOCKET WITH TOKEN
+        await WebSocketService.instance.connect(token: token);
 
         if (!mounted) return;
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => DashboardScreen()),
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
         );
       } else {
         showMessage(data["message"] ?? "Login failed");
       }
     }
-    // DIO EXCEPTIONS
-    on DioException catch (e) {
-      debugPrint("DIO ERROR => ${e.type}");
-      debugPrint("DIO MESSAGE => ${e.message}");
 
-      String message = "Something went wrong";
+    on DioException catch (e) {
+      String message = "Network error";
 
       switch (e.type) {
         case DioExceptionType.connectionTimeout:
-          message =
-              "Cannot connect to server.\nCheck IP address or server status.";
+          message = "Server not reachable (check IP)";
           break;
-
-        case DioExceptionType.sendTimeout:
-          message = "Request send timeout.";
-          break;
-
         case DioExceptionType.receiveTimeout:
-          message = "Server is taking too long to respond.";
+          message = "Server too slow";
           break;
-
         case DioExceptionType.badResponse:
-          message = "Server error: ${e.response?.statusCode}";
+          message = "Server error ${e.response?.statusCode}";
           break;
-
-        case DioExceptionType.cancel:
-          message = "Request cancelled.";
-          break;
-
         case DioExceptionType.connectionError:
-          message = "No internet or server unreachable.";
+          message = "No internet / server offline";
           break;
-
-        case DioExceptionType.badCertificate:
-          message = "Bad SSL certificate.";
-          break;
-
-        case DioExceptionType.unknown:
+        default:
           if (e.error is SocketException) {
-            message = "Server not found.\nMake sure IP is correct.";
-          } else {
-            message = "Unexpected network error.";
+            message = "Invalid server IP";
           }
-          break;
       }
 
       showMessage(message);
     }
-    // OTHER ERRORS
-    catch (e) {
-      debugPrint("GENERAL ERROR => $e");
 
+    catch (e) {
       showMessage("Unexpected error: $e");
     }
 
@@ -121,7 +101,7 @@ class _LoginFormState extends State<LoginForm> {
 
   void showMessage(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), duration: const Duration(seconds: 3)),
+      SnackBar(content: Text(msg)),
     );
   }
 
@@ -136,7 +116,6 @@ class _LoginFormState extends State<LoginForm> {
             prefixIcon: Icon(Icons.person),
           ),
         ),
-
         const SizedBox(height: 15),
 
         TextField(
@@ -155,10 +134,9 @@ class _LoginFormState extends State<LoginForm> {
           height: 50,
           child: ElevatedButton(
             onPressed: loading ? null : login,
-            child:
-                loading
-                    ? const CircularProgressIndicator()
-                    : const Text("LOGIN"),
+            child: loading
+                ? const CircularProgressIndicator()
+                : const Text("LOGIN"),
           ),
         ),
       ],

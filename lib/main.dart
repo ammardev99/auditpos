@@ -17,6 +17,9 @@ class AuditApp extends StatelessWidget {
       title: 'Audit App',
       theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const ServerIpScreen(),
+      // home: Scaffold(
+      //   body: Text("data"),
+      // ),
     );
   }
 }

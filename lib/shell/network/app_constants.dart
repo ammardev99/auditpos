@@ -4,8 +4,17 @@ class AppConstants {
   static PosConfig? _activePos;
 
   static const List<PosConfig> posList = [
-    PosConfig(name: "v2/php_mart", ip: "192.168.1.16", basePath: "v2/php_mart"),
-    PosConfig(name: "fcc_pos_php/php_mart", ip: "192.168.1.19", basePath: "fcc_pos_php/php_mart"),
+    PosConfig(
+      name: "FCC",
+
+      ip: "192.168.10.22",
+
+      httpPort: 8000,
+
+      wsPort: 8080,
+
+      basePath: "",
+    ),
   ];
 
   static void setPos(PosConfig pos) {

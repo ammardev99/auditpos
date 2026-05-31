@@ -28,133 +28,200 @@ class AuditConfirmItemTile extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Row 1: Title and Sync Status Badge
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    item.productName,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: item.isApproved ? Colors.green : Colors.amber.shade700,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    item.isApproved ? "Synced" : "Pending Sync",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "Barcode: ${item.barcode}",
-              style: const TextStyle(
-                color: Colors.blueGrey,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Divider(height: 16),
-
-            // Row 2: Quantities, Prices, and Rack Locations Comparison Matrix
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                // System Properties Column
-                Expanded(
-                  child: Column(
-                    children: [
-                      const Text(
-                        "System Data",
-                        style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text("Stock Qty: ${item.systemQty}"),
-                      Text("Retail: \$${item.systemPrice.toStringAsFixed(2)}"),
-                      Text("Wholesale: \$${item.systemWPrice.toStringAsFixed(2)}", style: const TextStyle(fontSize: 12, color: Colors.blueGrey)),
-                      Text("Rack: ${item.systemRack}", style: const TextStyle(fontWeight: FontWeight.w500)),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.compare_arrows, color: Colors.grey),
-                
-                // Physical Properties Column
-                Expanded(
-                  child: Column(
-                    children: [
-                      const Text(
-                        "Physical Count",
-                        style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text("Stock Qty: ${item.physicalQty}"),
-                      Text("Retail: \$${item.physicalPrice.toStringAsFixed(2)}"),
-                      Text("Wholesale: \$${item.physicalWPrice.toStringAsFixed(2)}", style: const TextStyle(fontSize: 12, color: Colors.blueGrey)),
-                      Text("Rack: ${item.physicalRack}", style: const TextStyle(fontWeight: FontWeight.w500)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            // Mismatch Visual indicator area if present
-            if (item.mismatchQty != 0) ...[
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Center(
-                  child: Text(
-                    "Mismatch: ${item.mismatchQty.toStringAsFixed(0)} items (Value Impact: \$${item.mismatchValue.toStringAsFixed(2)})",
-                    style: TextStyle(fontSize: 11, color: Colors.red.shade900, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-
-            // Action Buttons Section
-            if (!readOnly && !item.isApproved) ...[
-              const Divider(height: 16),
+        child: SelectionArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// HEADER
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  TextButton.icon(
-                    icon: const Icon(Icons.edit, color: Colors.orange, size: 18),
-                    label: const Text("Adjust Counts"),
-                    onPressed: onAdjust,
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
+                  Expanded(
+                    child: Text(
+                      item.productName,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    icon: const Icon(Icons.check, size: 16),
-                    label: const Text("Approve"),
-                    onPressed: onApprove,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          item.isApproved
+                              ? Colors.green
+                              : Colors.amber.shade700,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      item.isApproved ? "Synced" : "Pending Sync",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
+
+              const SizedBox(height: 4),
+
+              Text(
+                "Barcode: ${item.barcode}",
+                style: const TextStyle(
+                  color: Colors.blueGrey,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+              const Divider(height: 16),
+
+              /// =========================
+              /// TABLE HEADER
+              /// =========================
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        "FIELD",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        "SYS",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        "PHY",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        "Δ",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 6),
+
+              /// =========================
+              /// TABLE ROWS
+              /// =========================
+              _row(
+                "Rack",
+                item.systemRack,
+                item.physicalRack,
+                item.systemRack == item.physicalRack ? "✓" : "●",
+              ),
+
+              _row(
+                "Qty",
+                "${item.systemQty}",
+                "${item.physicalQty}",
+                "${item.mismatchQty}",
+              ),
+
+              _row(
+                "Wholesale",
+                "${item.systemWPrice}",
+                "${item.physicalWPrice}",
+                "${item.physicalWPrice - item.systemWPrice}",
+              ),
+
+              _row(
+                "Sale Rate",
+                "${item.systemPrice}",
+                "${item.physicalPrice}",
+                "${item.physicalPrice - item.systemPrice}",
+              ),
+
+              const SizedBox(height: 10),
+
+              /// ACTIONS
+              if (!readOnly && !item.isApproved)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton.icon(
+                      onPressed: onAdjust,
+                      icon: const Icon(Icons.edit, size: 18),
+                      label: const Text("Adjust"),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton.icon(
+                      onPressed: onApprove,
+                      icon: const Icon(Icons.check, size: 18),
+                      label: const Text("Approve"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
             ],
-          ],
+          ),
         ),
+      ),
+    );
+  }
+
+  /// TABLE ROW BUILDER
+  Widget _row(String label, String sys, String phy, String diff) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          Expanded(flex: 2, child: Text(sys, textAlign: TextAlign.center)),
+          Expanded(flex: 2, child: Text(phy, textAlign: TextAlign.center)),
+          Expanded(
+            flex: 2,
+            child: Text(
+              diff,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade800,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

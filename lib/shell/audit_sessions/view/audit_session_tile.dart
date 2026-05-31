@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:zi_core/zi_core_io.dart';
 import '../data/audit_session_history_model.dart';
 
 class AuditSessionHTile extends StatelessWidget {
@@ -251,33 +250,33 @@ class AuditSessionHTile extends StatelessWidget {
                     label: const Text("Close Session"),
                     onPressed: onCloseSession,
                   ),
-                  if (session.status == 'completed') ...[
-                    const SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      icon: const Icon(Icons.check_circle_outline, size: 16),
-                      label: const Text("Approve All"),
-                      onPressed: () async {
-                        // 1. Show the confirmation dialog
-                        bool? isConfirmed = await ZiConfirmationUser.confirm(
-                          title:
-                              "Confirm to approve all?", // You can customize this title
-                          context: context,
-                        );
+                  // if (session.status == 'completed') ...[
+                  //   const SizedBox(width: 8),
+                  //   ElevatedButton.icon(
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: Colors.green,
+                  //       foregroundColor: Colors.white,
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(8),
+                  //       ),
+                  //     ),
+                  //     icon: const Icon(Icons.check_circle_outline, size: 16),
+                  //     label: const Text("Approve All"),
+                  //     onPressed: () async {
+                  //       // 1. Show the confirmation dialog
+                  //       bool? isConfirmed = await ZiConfirmationUser.confirm(
+                  //         title:
+                  //             "Confirm to approve all?", // You can customize this title
+                  //         context: context,
+                  //       );
 
-                        // 2. Only call onApprove if the user clicks 'Yes' (returns true)
-                        if (isConfirmed == true) {
-                          onApprove();
-                        }
-                      },
-                    ),
-                  ],
+                  //       // 2. Only call onApprove if the user clicks 'Yes' (returns true)
+                  //       if (isConfirmed == true) {
+                  //         onApprove();
+                  //       }
+                  //     },
+                  //   ),
+                  // ],
                 ],
               ),
             ],

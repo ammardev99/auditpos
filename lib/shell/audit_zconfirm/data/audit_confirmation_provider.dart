@@ -1,5 +1,6 @@
 import 'dart:async'; // Add this import for StreamSubscription
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zi_core/zi_core_io.dart';
 import '../../network/websocket_service.dart';
 import 'audit_confirmation_state.dart';
 import 'confirmation_item_model.dart';
@@ -98,21 +99,28 @@ class AuditConfirmationNotifier extends StateNotifier<AuditConfirmationState> {
     });
   }
 
-  void submitItemAdjustment({
-    required int productId,
-    required int qty,
-    required double price,
-    double? wPrice,
-  }) {
-    WebSocketService.instance.send({
-      "action": "update_audit_item",
-      "payload": {
-        "audit_id": auditId,
-        "product_id": productId,
-        "phyQty": qty,
-        "phyPrice": price,
-        if (wPrice != null) "phyWPrice": wPrice,
-      },
-    });
-  }
+void submitItemAdjustment({
+  required int productId,
+  required int qty,
+  required double price,
+  required double wholesalePrice,
+  required String rack,
+}) {
+  ZiLogger.log(
+    "qty:$qty price:$price wholesale:$wholesalePrice rack:$rack",
+  );
+
+  WebSocketService.instance.send({
+    "action": "update_audit_item",
+    "payload": {
+      "audit_id": auditId,
+      "product_id": productId,
+
+      "phyQty": qty,
+      "phyPrice": price,
+      "phyWholesalePrice": wholesalePrice,
+      "phyRack": rack,
+    },
+  });
+}
 }

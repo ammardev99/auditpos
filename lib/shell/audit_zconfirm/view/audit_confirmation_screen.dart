@@ -1,3 +1,4 @@
+import 'package:auditpos/shell/audit_zconfirm/view/audit_adjustment_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zi_core/zi_core_io.dart';
@@ -215,83 +216,31 @@ class _AuditConfirmationScreenState
     ConfirmationItemModel targetItem,
     AuditConfirmationNotifier notifierAction,
   ) {
-    final qtyController = TextEditingController(
-      text: targetItem.physicalQty.toString(),
-    );
-
-    final priceController = TextEditingController(
-      text: targetItem.physicalPrice.toString(),
-    );
-
     showDialog(
+      
       context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: ZiColors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: AuditAdjustmentDialogContent(
+              item: targetItem,
+              onSave: (qty, price, wPrice, rack) {
+                notifierAction.submitItemAdjustment(
+                  productId: targetItem.productId,
+                  qty: qty.toInt(),
+                  price: price,
+                  wholesalePrice: wPrice,
+                  rack: rack
 
-      builder:
-          (context) => AlertDialog(
-            title: Text("Adjust: ${targetItem.productName}"),
+                );
 
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-
-              children: [
-                TextField(
-                  controller: qtyController,
-
-                  keyboardType: TextInputType.number,
-
-                  decoration: const InputDecoration(
-                    labelText: "Physical Quantity Count",
-                  ),
-                ),
-
-                TextField(
-                  controller: priceController,
-
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-
-                  decoration: const InputDecoration(
-                    labelText: "Physical Unit Price",
-                  ),
-                ),
-              ],
+              },
             ),
-
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-
-                child: const Text("Cancel"),
-              ),
-
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-
-                onPressed: () {
-                  final parsedQty =
-                      int.tryParse(qtyController.text) ??
-                      targetItem.physicalQty;
-
-                  final parsedPrice =
-                      double.tryParse(priceController.text) ??
-                      targetItem.physicalPrice;
-
-                  notifierAction.submitItemAdjustment(
-                    productId: targetItem.productId,
-
-                    qty: parsedQty,
-
-                    price: parsedPrice,
-                  );
-
-                  Navigator.pop(context);
-                },
-
-                child: const Text("Save Counts"),
-              ),
-            ],
           ),
+        );
+      },
     );
   }
 }

@@ -90,7 +90,7 @@ class ConfirmationItemModel {
       productId: int.tryParse(json['product_id'].toString()) ?? 0,
       productName: (json['product_name'] ?? 'Unknown Item').toString().trim(),
       barcode:
-          (json['product_code'] ?? json['barcode'] ?? json['sku'] ?? 'N/A')
+          (json['product_code'] ?? json['barcode'] ?? json['sku'] ?? '-')
               .toString()
               .trim(),
       systemQty: parseInt(json['sys_qty'] ?? json['system_qty']),
@@ -103,14 +103,23 @@ class ConfirmationItemModel {
       mismatchValue: parseDouble(json['mismatch_value']),
       isApproved: approved,
 
-      systemRack: (json['sys_rack'] ?? 'N/A').toString().trim(),
-      physicalRack: (json['phy_rack'] ?? 'N/A').toString().trim(),
-      systemWPrice: parseDouble(
-        json['sys_wprice'] ?? json['sys_wholesale_price'],
-      ),
-      physicalWPrice: parseDouble(
-        json['phy_wprice'] ?? json['phy_wholesale_price'],
-      ),
+      systemRack: (json['sys_rack'] ?? '-').toString().trim(),
+      physicalRack: (json['phy_rack'] ?? '-').toString().trim(),
+systemWPrice: parseDouble(
+  json['sys_wholesale_price'] ?? json['sys_wprice'] ?? 0,
+),
+
+physicalWPrice: parseDouble(
+  json['phy_wholesale_price'] ?? json['phy_wprice'] ?? 0,
+),
+      // systemWPrice: parseDouble(
+      //   // json['sys_wprice'] ?? json['sys_wholesale_price'],
+      //   json['sys_wprice'] ?? json['sys_wprice'],
+      // ),
+      // physicalWPrice: parseDouble(
+      //   // json['phy_wprice'] ?? json['phy_wholesale_price'],
+      //   json['phy_wprice'] ?? json['phy_wprice'],
+      // ),
     );
   }
 }

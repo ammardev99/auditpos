@@ -20,7 +20,10 @@ class AuditApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Audit App',
-      theme: ThemeData(primaryColor: ZiColors.primary),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: ZiColors.primary),
+        primaryColor: ZiColors.primary,
+      ),
       home: const ServerIpScreen(),
     );
   }

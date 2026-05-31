@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:auditpos/shell/audit_confirm/view/audit_confirmation_screen.dart';
+import 'package:auditpos/shell/audit_zconfirm/view/audit_confirmation_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zi_core/zi_core_io.dart';
 import '../../network/websocket_service.dart';

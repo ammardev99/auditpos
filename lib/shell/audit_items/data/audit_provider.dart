@@ -2,22 +2,24 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shell/network/websocket_service.dart';
+import '../../network/websocket_service.dart';
 
 import 'audit_item_model.dart';
 import 'audit_session_model.dart';
 
 // Change to autoDispose so the state resets when you leave the AuditScreen
-final auditProvider = StateNotifierProvider.autoDispose<AuditNotifier, AuditState>((ref) {
-  final notifier = AuditNotifier();
-  
-  // This is the clean, correct way to dispose of the subscription
-  ref.onDispose(() {
-    notifier.disposeModule();
-  });
+final auditProvider =
+    StateNotifierProvider.autoDispose<AuditNotifier, AuditState>((ref) {
+      final notifier = AuditNotifier();
 
-  return notifier;
-});
+      // This is the clean, correct way to dispose of the subscription
+      ref.onDispose(() {
+        notifier.disposeModule();
+      });
+
+      return notifier;
+    });
+
 class AuditState {
   final bool loading;
   final AuditSessionModel? session;
@@ -152,50 +154,110 @@ class AuditNotifier extends StateNotifier<AuditState> {
     required String phyRack,
   }) {
     final auditId = state.session?.auditId;
+
     if (auditId == null) return;
 
     WebSocketService.instance.send({
       "action": "update_audit_item",
+
       "payload": {
         "audit_id": auditId,
+
         "product_id": productId,
+
         "phyQty": phyQty,
+
         "phyPrice": phyPrice,
+
         "phyWholesalePrice": phyWholesalePrice,
+
         "phyRack": phyRack,
       },
     });
 
-    /// Update local list immediately so the UI snaps instantly without waiting on network
     final updated =
         state.items.map((item) {
-          if (item.productId == productId) {
-            final mismatchQty = double.parse(
-              (phyQty - item.sysQty).toStringAsFixed(2),
-            );
-
-            final mismatchValue = double.parse(
-              ((phyQty * phyPrice) - (item.sysQty * item.sysPrice))
-                  .toStringAsFixed(2),
-            );
-
-            return item.copyWith(
-              phyQty: phyQty,
-              phyPrice: phyPrice,
-              phyWholesalePrice: phyWholesalePrice,
-              phyRack: phyRack,
-              mismatchQty: mismatchQty,
-              mismatchValue: mismatchValue,
-            );
+          if (item.productId != productId) {
+            return item;
           }
-          return item;
+
+          final mismatchQty = phyQty - item.sysQty;
+
+          final mismatchValue =
+              (phyQty * phyPrice) - (item.sysQty * item.sysPrice);
+
+          return item.copyWith(
+            phyQty: phyQty,
+            phyPrice: phyPrice,
+
+            phyWholesalePrice: phyWholesalePrice,
+
+            phyRack: phyRack,
+
+            mismatchQty: mismatchQty,
+
+            mismatchValue: mismatchValue,
+
+            audited: true, // ONLY LOCAL
+          );
         }).toList();
 
     state = state.copyWith(items: updated);
 
-    // Refresh search filter presentation array
     searchItems(state.searchQuery);
   }
+  // void updateAuditItem({
+  //   required int productId,
+  //   required double phyQty,
+  //   required double phyPrice,
+  //   required double phyWholesalePrice,
+  //   required String phyRack,
+  // }) {
+  //   final auditId = state.session?.auditId;
+  //   if (auditId == null) return;
+
+  //   WebSocketService.instance.send({
+  //     "action": "update_audit_item",
+  //     "payload": {
+  //       "audit_id": auditId,
+  //       "product_id": productId,
+  //       "phyQty": phyQty,
+  //       "phyPrice": phyPrice,
+  //       "phyWholesalePrice": phyWholesalePrice,
+  //       "phyRack": phyRack,
+  //     },
+  //   });
+
+  //   /// Update local list immediately so the UI snaps instantly without waiting on network
+  //   final updated =
+  //       state.items.map((item) {
+  //         if (item.productId == productId) {
+  //           final mismatchQty = double.parse(
+  //             (phyQty - item.sysQty).toStringAsFixed(2),
+  //           );
+
+  //           final mismatchValue = double.parse(
+  //             ((phyQty * phyPrice) - (item.sysQty * item.sysPrice))
+  //                 .toStringAsFixed(2),
+  //           );
+
+  //           return item.copyWith(
+  //             phyQty: phyQty,
+  //             phyPrice: phyPrice,
+  //             phyWholesalePrice: phyWholesalePrice,
+  //             phyRack: phyRack,
+  //             mismatchQty: mismatchQty,
+  //             mismatchValue: mismatchValue,
+  //           );
+  //         }
+  //         return item;
+  //       }).toList();
+
+  //   state = state.copyWith(items: updated);
+
+  //   // Refresh search filter presentation array
+  //   searchItems(state.searchQuery);
+  // }
 
   /// COMPLETE AUDIT
   void completeAudit() {
@@ -213,12 +275,12 @@ class AuditNotifier extends StateNotifier<AuditState> {
   }
 
   void reset() {
-  // Reset the state to the initial state (empty list, null session, etc.)
-  state =  AuditState(
-    items: [],
-    filteredItems: [],
-    session: null,
-    loading: false,
-  );
-}
+    // Reset the state to the initial state (empty list, null session, etc.)
+    state = AuditState(
+      items: [],
+      filteredItems: [],
+      session: null,
+      loading: false,
+    );
+  }
 }

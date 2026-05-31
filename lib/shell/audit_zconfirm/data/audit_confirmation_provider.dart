@@ -1,6 +1,6 @@
 import 'dart:async'; // Add this import for StreamSubscription
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../shell/network/websocket_service.dart';
+import '../../network/websocket_service.dart';
 import 'audit_confirmation_state.dart';
 import 'confirmation_item_model.dart';
 

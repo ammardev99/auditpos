@@ -7,7 +7,7 @@ import 'package:auditpos/shell/system_info_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:zi_core/zi_core_io.dart';
 
-import '../../items_audit/view/audit_screen.dart';
+import '../../audit_items/view/audit_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({

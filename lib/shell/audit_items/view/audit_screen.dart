@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zi_core/zi_core_io.dart';
 
-import '../../../shell/network/app_constants.dart';
-import '../../../shell/network/websocket_service.dart';
+import '../../network/app_constants.dart';
+import '../../network/websocket_service.dart';
 
 import '../data/audit_provider.dart';
 
@@ -116,7 +116,10 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
                               title:
                                   "Confirm to ${state.session == null ? 'start' : 'complete'}",
                               context: context,
-                              actionLabel: state.session == null ? 'Start Audit' : 'Complete  Audit',
+                              actionLabel:
+                                  state.session == null
+                                      ? 'Start Audit'
+                                      : 'Complete  Audit',
                             );
 
                             // 3. Only proceed if user clicked 'Yes' (isConfirmed == true)
@@ -175,7 +178,7 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
                               onChanged: (value) {
                                 notifier.searchItems(value);
                               },
-                              // suffix: ,
+                              // suffix: , //TODO: BarCode
                               suffix:
                                   searchController.text.isNotEmpty
                                       ? IconButton(
@@ -249,6 +252,7 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
                                 return AuditItemTile(
                                   item: item,
                                   onTap: () {
+                                    ZiLogger.log(" Item Tile tap");
                                     if (!connected) {
                                       ScaffoldMessenger.of(
                                         context,
@@ -262,28 +266,51 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
                                       return;
                                     }
 
-                                    showDialog(
-                                      context: context,
-                                      builder: (_) {
-                                        return AuditUpdateDialog(
-                                          item: item,
-                                          onSave: (
-                                            qty,
-                                            price,
-                                            wholesalePrice,
-                                            rack,
-                                          ) {
-                                            notifier.updateAuditItem(
-                                              productId: item.productId,
-                                              phyQty: qty,
-                                              phyPrice: price,
-                                              phyWholesalePrice: wholesalePrice,
-                                              phyRack: rack,
-                                            );
-                                          },
-                                        );
-                                      },
+                                    ziShowFeedOver(
+                                      title: item.productName,
+                                      context,
+                                      dismissOutside: true,
+                                      body: AuditUpdateDialog(
+                                        item: item,
+                                        onSave: (
+                                          qty,
+                                          price,
+                                          wholesalePrice,
+                                          rack,
+                                        ) {
+                                          notifier.updateAuditItem(
+                                            productId: item.productId,
+                                            phyQty: qty,
+                                            phyPrice: price,
+                                            phyWholesalePrice: wholesalePrice,
+                                            phyRack: rack,
+                                          );
+                                        },
+                                      ),
                                     );
+
+                                    // showDialog(
+                                    //   context: context,
+                                    //   builder: (_) {
+                                    //     return AuditUpdateDialog(
+                                    //       item: item,
+                                    //       onSave: (
+                                    //         qty,
+                                    //         price,
+                                    //         wholesalePrice,
+                                    //         rack,
+                                    //       ) {
+                                    //         notifier.updateAuditItem(
+                                    //           productId: item.productId,
+                                    //           phyQty: qty,
+                                    //           phyPrice: price,
+                                    //           phyWholesalePrice: wholesalePrice,
+                                    //           phyRack: rack,
+                                    //         );
+                                    //       },
+                                    //     );
+                                    //   },
+                                    // );
                                   },
                                 );
                               },

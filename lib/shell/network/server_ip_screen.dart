@@ -77,11 +77,9 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
   @override
   void dispose() {
     nameController.dispose();
-
     // Remove the listener before disposing the controller
     ipController.removeListener(_onIpChanged);
     ipController.dispose();
-
     httpPortController.dispose();
     wsPortController.dispose();
     basePathController.dispose();

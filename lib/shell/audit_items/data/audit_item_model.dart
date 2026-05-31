@@ -12,70 +12,61 @@ class AuditItemModel {
   final double sysPrice;
   final double phyPrice;
 
-  // New Wholesale Fields
   final double sysWholesalePrice;
   final double phyWholesalePrice;
 
-  // New Rack Fields (Strings because they usually contain letters like 'a55')
   final String sysRack;
   final String phyRack;
 
   final double mismatchQty;
   final double mismatchValue;
 
+  // FRONTEND ONLY
+  final bool audited;
+
   AuditItemModel({
     required this.id,
     required this.auditId,
     required this.productId,
+
     required this.productCode,
     required this.productName,
+
     required this.sysQty,
     required this.phyQty,
+
     required this.sysPrice,
     required this.phyPrice,
+
     required this.sysWholesalePrice,
     required this.phyWholesalePrice,
+
     required this.sysRack,
     required this.phyRack,
+
     required this.mismatchQty,
     required this.mismatchValue,
+
+    this.audited = false,
   });
 
-  factory AuditItemModel.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AuditItemModel.fromJson(Map<String, dynamic> json) {
     return AuditItemModel(
       id: int.parse(json['id'].toString()),
-
-      auditId: int.parse(
-        json['audit_id'].toString(),
-      ),
-
-      productId: int.parse(
-        json['product_id'].toString(),
-      ),
+      auditId: int.parse(json['audit_id'].toString()),
+      productId: int.parse(json['product_id'].toString()),
 
       productCode: json['product_code'] ?? '',
-
       productName: json['product_name'] ?? '',
 
-      sysQty: double.parse(
-        json['sys_qty'].toString(),
-      ),
+      sysQty: double.parse(json['sys_qty'].toString()),
 
-      phyQty: double.parse(
-        json['phy_qty'].toString(),
-      ),
+      phyQty: double.parse(json['phy_qty'].toString()),
 
-      sysPrice: double.parse(
-        json['sys_price'].toString(),
-      ),
+      sysPrice: double.parse(json['sys_price'].toString()),
 
-      phyPrice: double.parse(
-        json['phy_price'].toString(),
-      ),
+      phyPrice: double.parse(json['phy_price'].toString()),
 
-      // Parsing new fields safely
       sysWholesalePrice: double.parse(
         (json['sys_wholesale_price'] ?? 0).toString(),
       ),
@@ -88,21 +79,23 @@ class AuditItemModel {
 
       phyRack: json['phy_rack']?.toString() ?? '',
 
-      mismatchQty: double.parse(
-        json['mismatch_qty'].toString(),
-      ),
+      mismatchQty: double.parse(json['mismatch_qty'].toString()),
 
-      mismatchValue: double.parse(
-        json['mismatch_value'].toString(),
-      ),
+      mismatchValue: double.parse(json['mismatch_value'].toString()),
+
+      audited: false,
     );
   }
 
   AuditItemModel copyWith({
+    bool? audited,
+
     double? phyQty,
     double? phyPrice,
     double? phyWholesalePrice,
+
     String? phyRack,
+
     double? mismatchQty,
     double? mismatchValue,
   }) {
@@ -110,18 +103,29 @@ class AuditItemModel {
       id: id,
       auditId: auditId,
       productId: productId,
+
       productCode: productCode,
       productName: productName,
+
       sysQty: sysQty,
       phyQty: phyQty ?? this.phyQty,
+
       sysPrice: sysPrice,
       phyPrice: phyPrice ?? this.phyPrice,
+
       sysWholesalePrice: sysWholesalePrice,
+
       phyWholesalePrice: phyWholesalePrice ?? this.phyWholesalePrice,
+
       sysRack: sysRack,
+
       phyRack: phyRack ?? this.phyRack,
+
       mismatchQty: mismatchQty ?? this.mismatchQty,
+
       mismatchValue: mismatchValue ?? this.mismatchValue,
+
+      audited: audited ?? this.audited,
     );
   }
 }

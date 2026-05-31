@@ -161,12 +161,12 @@ class _AuditSessionsHScreenState extends ConsumerState<AuditSessionsHScreen> {
 
                                         const SizedBox(width: 8),
 
-                                        Text("Close ${session.auditNo}"),
+                                        Expanded(child: Text("Close ${session.auditNo}")),
                                       ],
                                     ),
 
                                     content: const Text(
-                                      "Are you sure you want to lock and close this session? This action stops inventory recording adjustments.",
+                                      "Are you sure you want to lock and close this session? \nThis action stops inventory recording adjustments.",
                                     ),
 
                                     actions: [

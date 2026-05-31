@@ -51,27 +51,29 @@ class AuditSessionHTile extends StatelessWidget {
                 const Spacer(),
 
                 // Status Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: statusColor.withValues(alpha: 0.5),
+                if (!session.isClosed) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: statusColor.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    child: Text(
+                      session.status.toUpperCase(),
+                      style: TextStyle(
+                        color: statusColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                  child: Text(
-                    session.status.toUpperCase(),
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                ],
 
                 // Closed Guard Lock Badge
                 if (session.isClosed) ...[
@@ -135,53 +137,6 @@ class AuditSessionHTile extends StatelessWidget {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 6),
-                    // =========================================
-                    // ADDED: AUDITOR NAME ROW
-                    // =========================================
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Icon(
-                          Icons.person_outline,
-                          size: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          "Auditor: ${session.openByName}",
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-
-                        if (session.isClosed &&
-                            session.closedByName != null) ...[
-                          const SizedBox(height: 3),
-                          const SizedBox(width: 20),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.lock_person_outlined,
-                                size: 14,
-                                color: Colors.red.shade400,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                "Closed by: ${session.closedByName}",
-                                style: TextStyle(
-                                  color: Colors.red.shade700,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
                   ],
                 ),
 
@@ -231,10 +186,59 @@ class AuditSessionHTile extends StatelessWidget {
                   ),
               ],
             ),
+            const SizedBox(height: 4),
+            // =========================================
+            // ADDED: AUDITOR NAME ROW
+            // =========================================
+            Row(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Icon(
+                      Icons.person_outline,
+                      size: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      "Auditor: ${session.openByName}",
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                if (session.isClosed && session.closedByName != null) ...[
+                  // const SizedBox(width: 8),
+                  Spacer(),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.lock_person_outlined,
+                        size: 14,
+                        color: Colors.red.shade400,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        "Closed by: ${session.closedByName}",
+                        style: TextStyle(
+                          color: Colors.red.shade700,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
 
             // Row 3: Context action buttons matrix
             if (!session.isClosed && session.status != 'approved') ...[
-              const SizedBox(height: 14),
+              Divider(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

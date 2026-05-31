@@ -2,6 +2,7 @@ import 'package:auditpos/shell/audit_zconfirm/view/audit_adjustment_dialog.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zi_core/zi_core_io.dart';
+import '../../../bar_code_scanner/bar_code_io.dart';
 import '../data/audit_confirmation_provider.dart';
 import '../data/confirmation_item_model.dart';
 import 'confirm_tile.dart';
@@ -47,6 +48,16 @@ class _AuditConfirmationScreenState
     super.dispose();
   }
 
+  // The Scanner logic
+  Future<void> _handleScan(AuditConfirmationNotifier notifier) async {
+    final code = await ZiToBarCodeScanner.scan(context);
+    if (code != null) {
+      _searchFieldController.text = code;
+      notifier.updateSearchBarText(code);
+      setState(() {}); // Rebuild to update suffix icon to 'clear'
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final stateWatcher = ref.watch(auditConfirmationProvider(widget.auditId));
@@ -54,79 +65,61 @@ class _AuditConfirmationScreenState
       auditConfirmationProvider(widget.auditId).notifier,
     );
     final visibleList = stateWatcher.computedVisibleItems;
+
     return Scaffold(
       appBar: ZiAppBarB(
         title: "Confirm Audit: ${widget.auditNo}",
-        subtitle:
-            // READ ONLY BADGE
-            widget.readOnly ? "READ ONLY MODE" : null,
-
+        subtitle: widget.readOnly ? "READ ONLY MODE" : null,
         actions: [
           IconButton(
             icon: Icon(
               stateWatcher.showMismatchesOnly
                   ? Icons.filter_alt
                   : Icons.filter_alt_off,
-
               color:
                   stateWatcher.showMismatchesOnly
                       ? Colors.orange
                       : Colors.white,
             ),
-
-            tooltip:
-                stateWatcher.showMismatchesOnly
-                    ? "Mismatches Only"
-                    : "All Items Displayed",
-
             onPressed: () => notifierAction.toggleServerFilter(),
           ),
-
           IconButton(
             icon: const Icon(Icons.refresh),
-
             onPressed: () => notifierAction.fetchDataFromServer(),
           ),
         ],
-
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(65.0),
-
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-
             child: TextField(
               controller: _searchFieldController,
-
-              onChanged: (value) => notifierAction.updateSearchBarText(value),
-
+              onChanged: (value) {
+                notifierAction.updateSearchBarText(value);
+                setState(() {}); // Rebuild to toggle between scan/clear
+              },
               decoration: InputDecoration(
                 hintText: "Search items via Name or Barcode...",
-
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
-
                 suffixIcon:
                     _searchFieldController.text.isNotEmpty
                         ? IconButton(
                           icon: const Icon(Icons.clear),
-
                           onPressed: () {
                             _searchFieldController.clear();
-
                             notifierAction.updateSearchBarText('');
+                            setState(() {});
                           },
                         )
-                        : null,
-
+                        : IconButton(
+                          icon: const Icon(Icons.qr_code_scanner),
+                          onPressed: () => _handleScan(notifierAction),
+                        ),
                 filled: true,
-
                 fillColor: Colors.white,
-
                 contentPadding: EdgeInsets.zero,
-
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -134,23 +127,22 @@ class _AuditConfirmationScreenState
           ),
         ),
       ),
-
       body:
           stateWatcher.isLoading
               ? const Center(child: CircularProgressIndicator())
               : visibleList.isEmpty
-              ? const Center(
+              ? Center(
                 child: Text(
-                  "No items match specifications.",
-                  style: TextStyle(color: Colors.grey),
+                  _searchFieldController.text.isNotEmpty
+                      ? "No items match: '${_searchFieldController.text}'"
+                      : "No items match specifications.",
+                  style: const TextStyle(color: Colors.grey),
                 ),
               )
-              : // Inside your original screen's ListView.builder block:
-              ListView.builder(
+              : ListView.builder(
                 itemCount: visibleList.length,
                 itemBuilder: (context, idx) {
                   final targetItem = visibleList[idx];
-
                   return AuditConfirmItemTile(
                     item: targetItem,
                     readOnly: widget.readOnly,
@@ -182,10 +174,10 @@ class _AuditConfirmationScreenState
 
       builder:
           (context) => AlertDialog(
-            title: const Text("Approve Product Line?"),
+            title: const Text("Update in System?"),
 
             content: Text(
-              "Are you sure you want to approve ${targetItem.productName}? This will synchronize quantities directly into live stock inventory tracking tables.",
+              "${targetItem.productName}\nThis will synchronize quantities directly into live stock inventory tracking tables.",
             ),
 
             actions: [
@@ -204,7 +196,10 @@ class _AuditConfirmationScreenState
                   Navigator.pop(context);
                 },
 
-                child: const Text("Confirm & Sync"),
+                child: const Text(
+                  "Confirm & Sync",
+                  style: TextStyle(color: ZiColors.white),
+                ),
               ),
             ],
           ),
@@ -217,7 +212,6 @@ class _AuditConfirmationScreenState
     AuditConfirmationNotifier notifierAction,
   ) {
     showDialog(
-      
       context: context,
       builder: (context) {
         return Dialog(
@@ -232,10 +226,8 @@ class _AuditConfirmationScreenState
                   qty: qty.toInt(),
                   price: price,
                   wholesalePrice: wPrice,
-                  rack: rack
-
+                  rack: rack,
                 );
-
               },
             ),
           ),

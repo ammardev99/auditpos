@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:auditpos/shell/products/data/p_provider.dart';
 import 'package:auditpos/shell/products/product_tile.dart';
 import 'package:zi_core/zi_core_io.dart';
+import '../../bar_code_scanner/bar_code_io.dart';
 import '../network/websocket_service.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
@@ -39,6 +40,18 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     });
   }
 
+  Future<void> searchScan() async {
+    final code = await ZiToBarCodeScanner.scan(context);
+
+    if (code != null) {
+      searchController.text = code;
+
+      // FIX: Manually trigger the search in your provider
+      // so the list updates immediately after the scan.
+      ref.read(productProvider.notifier).searchProducts(code);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(productProvider);
@@ -66,12 +79,28 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                           hint: "Search by name or barcode",
                           type: ZiInputType.search,
                           controller: searchController,
+
+                          suffix:
+                              searchController.text.isNotEmpty
+                                  ? IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      searchController.clear();
+                                      ref
+                                          .read(productProvider.notifier)
+                                          .searchProducts('');
+                                      setState(() {});
+                                    },
+                                  )
+                                  : IconButton(
+                                    icon: const Icon(Icons.qr_code_scanner),
+                                    onPressed: searchScan,
+                                  ),
                           onChanged: (value) {
                             ref
                                 .read(productProvider.notifier)
                                 .searchProducts(value);
                           },
-                          // suffix: ,
                         ),
                       ),
 

@@ -16,104 +16,106 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          children: [
-            ziGap(16),
-
-            SystemInfoBar(),
-            ziGap(12),
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 3,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 15,
-                children: [
-                  DashboardCard(
-                    title: "Products",
-                    icon: Icons.inventory,
-                    color: Colors.blue,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ProductsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  DashboardCard(
-                    title: "Audits",
-                    icon: Icons.fact_check,
-                    color: Colors.cyan,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const AuditScreen()),
-                      );
-                    },
-                  ),
-                  DashboardCard(
-                    title: "Audit Sessions",
-                    icon: Icons.fact_check,
-                    color: Colors.orange,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AuditSessionsHScreen(),
-                        ),
-                      );
-                    },
-                  ),
-
-                  // Wrapped this specific card so it rebuilds whenever the connection state flips
-                  ValueListenableBuilder<bool>(
-                    valueListenable:
-                        WebSocketService.instance.isConnectedNotifier,
-                    builder: (context, isConnected, _) {
-                      return DashboardCard(
-                        title: isConnected ? "Connected WS" : "Disconnected WS",
-                        icon: Icons.wifi,
-                        color: isConnected ? Colors.green : Colors.red,
-                        onTap: () async {
-                          if (isConnected) {
-                            WebSocketService.instance.disconnect();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("WebSocket Disconnected"),
-                              ),
-                            );
-                          } else {
-                            await WebSocketService.instance.connect();
-                            if (!context.mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("WebSocket Connecting..."),
-                              ),
-                            );
-                          }
-                        },
-                      );
-                    },
-                  ),
-
-                  DashboardCard(
-                    title: "Logout",
-                    icon: Icons.logout,
-                    color: Colors.brown,
-                    onTap: () async {
-                      final auth = AuthService();
-
-                      await auth.logout(context);
-                    },
-                  ),
-                ],
+    return SafeArea(
+      child: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              ziGap(16),
+      
+              SystemInfoBar(),
+              ziGap(12),
+              Expanded(
+                child: GridView.count(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 15,
+                  mainAxisSpacing: 15,
+                  children: [
+                    DashboardCard(
+                      title: "Products",
+                      icon: Icons.inventory,
+                      color: Colors.blue,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ProductsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    DashboardCard(
+                      title: "Audits",
+                      icon: Icons.fact_check,
+                      color: Colors.cyan,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const AuditScreen()),
+                        );
+                      },
+                    ),
+                    DashboardCard(
+                      title: "Audit Sessions",
+                      icon: Icons.fact_check,
+                      color: Colors.orange,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AuditSessionsHScreen(),
+                          ),
+                        );
+                      },
+                    ),
+      
+                    // Wrapped this specific card so it rebuilds whenever the connection state flips
+                    ValueListenableBuilder<bool>(
+                      valueListenable:
+                          WebSocketService.instance.isConnectedNotifier,
+                      builder: (context, isConnected, _) {
+                        return DashboardCard(
+                          title: isConnected ? "Sys Connected" : "Sys Disconnected",
+                          icon: Icons.wifi,
+                          color: isConnected ? Colors.green : Colors.red,
+                          onTap: () async {
+                            if (isConnected) {
+                              WebSocketService.instance.disconnect();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("WebSocket Disconnected"),
+                                ),
+                              );
+                            } else {
+                              await WebSocketService.instance.connect();
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("WebSocket Connecting..."),
+                                ),
+                              );
+                            }
+                          },
+                        );
+                      },
+                    ),
+      
+                    DashboardCard(
+                      title: "Logout",
+                      icon: Icons.logout,
+                      color: Colors.brown,
+                      onTap: () async {
+                        final auth = AuthService();
+      
+                        await auth.logout(context);
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

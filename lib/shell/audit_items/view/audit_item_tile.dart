@@ -54,7 +54,7 @@ class AuditItemTile extends StatelessWidget {
         onTap: onTap,
 
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.only(left: 12, right: 12, top: 12),
 
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,14 +81,20 @@ class AuditItemTile extends StatelessWidget {
 
                         const SizedBox(height: 4),
 
-                        Text(
-                          item.productCode,
-
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                            fontFamily: "monospace",
-                          ),
+                        Row(
+                          children: [
+                            Icon(Icons.qr_code, size: 18, color: ZiColors.grayLight,),
+                            ziGap(4),
+                            Text(
+                              item.productCode,
+                            
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                                fontFamily: "monospace",
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -142,7 +148,11 @@ class AuditItemTile extends StatelessWidget {
 
                     Expanded(
                       flex: 2,
-                      child: Text("PHY", textAlign: TextAlign.center),
+                      child: Text(
+                        "PHY",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
@@ -242,16 +252,14 @@ class AuditItemTile extends StatelessWidget {
     return Container(
       color: bg,
 
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
 
       child: Row(
         children: [
           Expanded(
             flex: 3,
-
             child: Text(
               label,
-
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),

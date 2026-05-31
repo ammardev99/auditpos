@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zi_core/zi_core_io.dart';
 
+import '../../../bar_code_scanner/bar_code_io.dart';
 import '../../network/app_constants.dart';
 import '../../network/websocket_service.dart';
 
@@ -19,6 +20,19 @@ class AuditScreen extends ConsumerStatefulWidget {
 
 class _AuditScreenState extends ConsumerState<AuditScreen> {
   final searchController = TextEditingController();
+  Future<void> searchScan() async {
+    final code = await ZiToBarCodeScanner.scan(context);
+
+    if (code != null) {
+      searchController.text = code;
+
+      // FIX: Manually trigger the search in your provider
+      // so the list updates immediately after the scan.
+      // ref.read(productProvider.notifier).searchProducts(code);
+      // notifier.searchItems(code);
+      ref.read(auditProvider.notifier).searchItems(code);
+    }
+  }
 
   @override
   void dispose() {
@@ -175,21 +189,23 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
                               hint: "Search by name or barcode",
                               type: ZiInputType.search,
                               controller: searchController,
-                              onChanged: (value) {
-                                notifier.searchItems(value);
-                              },
-                              // suffix: , //TODO: BarCode
                               suffix:
                                   searchController.text.isNotEmpty
                                       ? IconButton(
                                         icon: const Icon(Icons.clear),
                                         onPressed: () {
                                           searchController.clear();
-                                          notifier.searchItems('');
+                                          notifier.searchItems(' ');
                                           setState(() {});
                                         },
                                       )
-                                      : null,
+                                      : IconButton(
+                                        icon: const Icon(Icons.qr_code_scanner),
+                                        onPressed: searchScan,
+                                      ),
+                              onChanged: (value) {
+                                notifier.searchItems(value);
+                              },
                             ),
                           ),
 

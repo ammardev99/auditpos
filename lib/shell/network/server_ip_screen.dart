@@ -4,6 +4,8 @@ import 'package:auditpos/shell/network/server_model.dart';
 import 'package:flutter/material.dart';
 import 'package:zi_core/zi_core_io.dart';
 
+import '../../bar_code_scanner/bar_code_io.dart';
+
 class ServerIpScreen extends StatefulWidget {
   const ServerIpScreen({super.key});
 
@@ -32,6 +34,7 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
 
     nameController = TextEditingController(text: pos.name);
 
+    // ipController = TextEditingController(text: ' ');
     ipController = TextEditingController(text: pos.ip);
     // Match the name used in the method below
     ipController.addListener(_onIpChanged);
@@ -67,9 +70,8 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
 
     AppConstants.setPos(pos);
 
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
-
       MaterialPageRoute(builder: (_) => const LoginScreen()),
     );
   }
@@ -89,7 +91,7 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // TODO add reload icon
+      // DO add reload icon
       body: SafeArea(
         child: Center(
           child: SizedBox(
@@ -116,30 +118,50 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
                   ),
 
                   const SizedBox(height: 30),
-                  // TODO later add a QR Code IP Scanner
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: ipController,
+                    decoration: InputDecoration(
+                      labelText: "IP Address",
+                      border: const OutlineInputBorder(),
+                      // Add the scanner icon here
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.qr_code_scanner),
+                        onPressed: () async {
+                          final scannedIp = await ZiToBarCodeScanner.scan(
+                            context,
+                          );
+                          if (scannedIp != null && scannedIp.isNotEmpty) {
+                            setState(() {
+                              ipController.text = scannedIp;
+                              // The listener _onIpChanged will automatically trigger
+                              // and update isIPEmpty, enabling the button.
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
                   if (AppConfig.environment == ZiEnvironment.development) ...[
                     TextField(
                       controller: nameController,
-
                       decoration: const InputDecoration(
                         labelText: "Server Name",
-
                         border: OutlineInputBorder(),
                       ),
                     ),
 
-                    const SizedBox(height: 15),
+                    // TextField(
+                    //   controller: ipController,
 
-                    TextField(
-                      controller: ipController,
+                    //   decoration: const InputDecoration(
+                    //     labelText: "IP Address",
 
-                      decoration: const InputDecoration(
-                        labelText: "IP Address",
-
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-
+                    //     border: OutlineInputBorder(),
+                    //   ),
+                    // ),
                     const SizedBox(height: 15),
 
                     TextField(

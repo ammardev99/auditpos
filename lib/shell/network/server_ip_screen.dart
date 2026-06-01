@@ -15,42 +15,45 @@ class ServerIpScreen extends StatefulWidget {
 
 class _ServerIpScreenState extends State<ServerIpScreen> {
   late final TextEditingController nameController;
-
   late final TextEditingController ipController;
-
   late final TextEditingController httpPortController;
-
   late final TextEditingController wsPortController;
-
   late final TextEditingController basePathController;
+
   bool isIPEmpty = true;
+  bool isMore = false;
+
+  ConnectionType connectionType = ConnectionType.port;
 
   @override
   void initState() {
     super.initState();
 
     final pos = AppConstants.pos;
-    isIPEmpty = pos.ip.isEmpty;
+
+    isIPEmpty = pos.ip.trim().isEmpty;
+
+    connectionType = pos.connectionType;
 
     nameController = TextEditingController(text: pos.name);
 
-    // ipController = TextEditingController(text: ' ');
     ipController = TextEditingController(text: pos.ip);
-    // Match the name used in the method below
-    ipController.addListener(_onIpChanged);
 
     httpPortController = TextEditingController(text: pos.httpPort.toString());
+
     wsPortController = TextEditingController(text: pos.wsPort.toString());
+
     basePathController = TextEditingController(text: pos.basePath);
+
+    ipController.addListener(_onIpChanged);
   }
 
-  // Ensure this name matches the one in addListener
   void _onIpChanged() {
-    final currentIsEmpty = ipController.text.trim().isEmpty;
-    if (isIPEmpty != currentIsEmpty) {
-      // Fixed variable name from isIpEmpty to isIPEmpty
+    final empty = ipController.text.trim().isEmpty;
+
+    if (empty != isIPEmpty) {
       setState(() {
-        isIPEmpty = currentIsEmpty;
+        isIPEmpty = empty;
       });
     }
   }
@@ -61,9 +64,11 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
 
       ip: ipController.text.trim(),
 
-      httpPort: int.parse(httpPortController.text.trim()),
+      connectionType: connectionType,
 
-      wsPort: int.parse(wsPortController.text.trim()),
+      httpPort: int.tryParse(httpPortController.text) ?? 80,
+
+      wsPort: int.tryParse(wsPortController.text) ?? 8080,
 
       basePath: basePathController.text.trim(),
     );
@@ -78,20 +83,50 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
 
   @override
   void dispose() {
-    nameController.dispose();
-    // Remove the listener before disposing the controller
     ipController.removeListener(_onIpChanged);
+
+    nameController.dispose();
     ipController.dispose();
     httpPortController.dispose();
     wsPortController.dispose();
     basePathController.dispose();
+
     super.dispose();
+  }
+
+  Widget buildConnectionSelector() {
+    return SegmentedButton<ConnectionType>(
+      segments: const [
+        ButtonSegment(
+          value: ConnectionType.port,
+
+          label: Text("Port"),
+
+          icon: Icon(Icons.router),
+        ),
+
+        ButtonSegment(
+          value: ConnectionType.path,
+
+          label: Text("link"),
+
+          icon: Icon(Icons.link),
+        ),
+      ],
+
+      selected: {connectionType},
+
+      onSelectionChanged: (selection) {
+        setState(() {
+          connectionType = selection.first;
+        });
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // DO add reload icon
       body: SafeArea(
         child: Center(
           child: SizedBox(
@@ -110,6 +145,7 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
 
                   Text(
                     "Server Configuration",
+
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -118,59 +154,54 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
                   ),
 
                   const SizedBox(height: 30),
-                  const SizedBox(height: 15),
+
                   TextField(
                     controller: ipController,
+
                     decoration: InputDecoration(
                       labelText: "IP Address",
+
                       border: const OutlineInputBorder(),
-                      // Add the scanner icon here
+
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.qr_code_scanner),
+
                         onPressed: () async {
                           final scannedIp = await ZiToBarCodeScanner.scan(
                             context,
                           );
+
                           if (scannedIp != null && scannedIp.isNotEmpty) {
-                            setState(() {
-                              ipController.text = scannedIp;
-                              // The listener _onIpChanged will automatically trigger
-                              // and update isIPEmpty, enabling the button.
-                            });
+                            ipController.text = scannedIp;
                           }
                         },
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 15),
-                  if (AppConfig.environment == ZiEnvironment.development) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      ZiCheckBoxD(
+                        value: isMore,
+                        label: "More..",
+                        onChanged: (value) {
+                          setState(() {
+                            isMore = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+
+                  if (isMore) ...[
+                  const SizedBox(height: 10),
                     TextField(
                       controller: nameController,
+
                       decoration: const InputDecoration(
                         labelText: "Server Name",
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-
-                    // TextField(
-                    //   controller: ipController,
-
-                    //   decoration: const InputDecoration(
-                    //     labelText: "IP Address",
-
-                    //     border: OutlineInputBorder(),
-                    //   ),
-                    // ),
-                    const SizedBox(height: 15),
-
-                    TextField(
-                      controller: httpPortController,
-
-                      keyboardType: TextInputType.number,
-
-                      decoration: const InputDecoration(
-                        labelText: "HTTP Port",
 
                         border: OutlineInputBorder(),
                       ),
@@ -178,40 +209,63 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
 
                     const SizedBox(height: 15),
 
-                    TextField(
-                      controller: wsPortController,
-
-                      keyboardType: TextInputType.number,
-
-                      decoration: const InputDecoration(
-                        labelText: "WS Port",
-
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
+                    buildConnectionSelector(),
 
                     const SizedBox(height: 15),
 
-                    TextField(
-                      controller: basePathController,
+                    if (connectionType == ConnectionType.port) ...[
+                      TextField(
+                        controller: httpPortController,
 
-                      decoration: const InputDecoration(
-                        labelText: "Base Path",
+                        keyboardType: TextInputType.number,
 
-                        border: OutlineInputBorder(),
+                        decoration: const InputDecoration(
+                          labelText: "HTTP Port",
+
+                          border: OutlineInputBorder(),
+                        ),
                       ),
-                    ),
+
+                      const SizedBox(height: 15),
+
+                      TextField(
+                        controller: wsPortController,
+
+                        keyboardType: TextInputType.number,
+
+                        decoration: const InputDecoration(
+                          labelText: "WS Port",
+
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
+
+                    if (connectionType == ConnectionType.path) ...[
+                      TextField(
+                        controller: basePathController,
+
+                        decoration: const InputDecoration(
+                          labelText: "Base Path",
+
+                          hintText: "billinga",
+
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
                   ],
-                  const SizedBox(height: 20),
+
+                  const SizedBox(height: 25),
 
                   Row(
                     children: [
                       Expanded(
                         child: ZiButtonB(
-                          disabled: isIPEmpty, // how i can make it real time
-                          //                           Undefined name 'isIpEmpty'.
-                          // Try correcting the name to one that is defined, or defining the name.
+                          disabled: isIPEmpty,
+
                           label: "Continue",
+
                           action: continueToLogin,
                         ),
                       ),

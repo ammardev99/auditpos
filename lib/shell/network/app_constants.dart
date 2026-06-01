@@ -1,31 +1,74 @@
 import 'package:auditpos/shell/network/server_model.dart';
 
 class AppConstants {
+
   static PosConfig? _activePos;
 
   static const List<PosConfig> posList = [
-    PosConfig(
-      name: "FCC",
 
-      ip: "192.168.10.22",
+    PosConfig(
+
+      name: "FCC Mart",
+
+      ip: "192.168.1.4",
+
+      connectionType:
+          ConnectionType.path,
 
       httpPort: 8000,
 
       wsPort: 8080,
 
-      basePath: "",
+      basePath: "billinga/billinga",
     ),
+
+    // Example Path Mode
+
+    /*
+    PosConfig(
+
+      name: "Billing",
+
+      ip: "192.168.10.22",
+
+      connectionType:
+          ConnectionType.path,
+
+      httpPort: 80,
+
+      wsPort: 8080,
+
+      basePath: "billinga",
+    ),
+    */
+
   ];
 
-  static void setPos(PosConfig pos) {
+  static void setPos(
+    PosConfig pos,
+  ) {
+
     _activePos = pos;
   }
 
-  static PosConfig get pos => _activePos ?? posList.first;
+  static PosConfig get pos {
 
-  static String get baseUrl => pos.baseUrl;
+    return _activePos ??
+        posList.first;
+  }
 
-  static String get loginUrl => "${pos.baseUrl}/api_login.php";
+  static String get baseUrl {
 
-  static String get wsUrl => pos.wsUrl;
+    return pos.baseUrl;
+  }
+
+  static String get loginUrl {
+
+    return "${pos.baseUrl}/api_login.php";
+  }
+
+  static String get wsUrl {
+
+    return pos.wsUrl;
+  }
 }

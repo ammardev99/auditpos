@@ -1,7 +1,10 @@
+enum ConnectionType { port, path }
+
 class PosConfig {
   final String name;
-
   final String ip;
+
+  final ConnectionType connectionType;
 
   final int httpPort;
 
@@ -12,19 +15,26 @@ class PosConfig {
   const PosConfig({
     required this.name,
     required this.ip,
+
+    required this.connectionType,
+
     required this.httpPort,
+
     required this.wsPort,
+
     required this.basePath,
   });
 
   String get baseUrl {
-    final root = "http://$ip:$httpPort";
-
-    if (basePath.isEmpty) {
-      return root;
+    if (connectionType == ConnectionType.port) {
+      return "http://$ip:$httpPort";
     }
 
-    return "$root/$basePath";
+    if (basePath.isEmpty) {
+      return "http://$ip";
+    }
+
+    return "http://$ip/$basePath";
   }
 
   String get wsUrl {

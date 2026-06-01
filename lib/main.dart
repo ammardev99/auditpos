@@ -6,7 +6,7 @@ import 'shell/network/server_ip_screen.dart';
 
 void main() {
   ziCoreInit(beta: true);
-  AppConfig.environment = ZiEnvironment.production;
+  AppConfig.environment = ZiEnvironment.development;
   ZiColors.override(ZiColorOverrides(primary: const Color(0xFFFF850C)));
 
   runApp(ProviderScope(child: const AuditApp()));

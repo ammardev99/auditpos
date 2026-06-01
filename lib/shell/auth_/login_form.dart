@@ -17,8 +17,10 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
-  final usernameController = TextEditingController(text: "admin");
-  final passwordController = TextEditingController(text: "admin");
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+  // final usernameController = TextEditingController(text: "admin");
+  // final passwordController = TextEditingController(text: "admin");
 
   bool loading = false;
 
@@ -59,7 +61,7 @@ class _LoginFormState extends State<LoginForm> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          MaterialPageRoute(builder: (_) => DashboardScreen()),
         );
       } else {
         showMessage(data["message"] ?? "Login failed");

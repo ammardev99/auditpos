@@ -106,22 +106,19 @@ class _LoginFormState extends State<LoginForm> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextField(
-          controller: usernameController,
-          decoration: const InputDecoration(
-            labelText: "Username",
-            prefixIcon: Icon(Icons.person),
-          ),
-        ),
-        const SizedBox(height: 15),
 
-        TextField(
+        ZiInput(
+          controller: usernameController,
+          prefix: const Icon(Icons.person),
+          label: "Username",
+        ),
+
+        const SizedBox(height: 15),
+        ZiInput(
           controller: passwordController,
-          obscureText: true,
-          decoration: const InputDecoration(
-            labelText: "Password",
-            prefixIcon: Icon(Icons.lock),
-          ),
+          prefix: const Icon(Icons.lock),
+          label: "Password",
+          type: ZiInputType.password,
         ),
 
         const SizedBox(height: 25),

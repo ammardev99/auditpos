@@ -105,22 +105,26 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       ),
 
                       Expanded(
-                        child: ListView.builder(
-                          itemCount: state.filteredData.length,
-                          itemBuilder: (context, index) {
-                            final item = state.filteredData[index];
-                            return ProductTile(
-                              count: item.productId,
-                              productName: item.productName,
-                              productCode: item.productCode,
-                              qty: item.quantityInstock.toString(),
-                              rack: item.rack,
-                              currentRate: item.currentRate.toString(),
-                              saleRate: item.saleRate.toString(),
-                              wholesaleRate: item.wholesaleRate.toString(),
-                            );
-                          },
-                        ),
+                        child:
+                            state.filteredData.isEmpty
+                                ? const Center(child: Text("No products found"))
+                                : ListView.builder(
+                                  itemCount: state.filteredData.length,
+                                  itemBuilder: (context, index) {
+                                    final item = state.filteredData[index];
+                                    return ProductTile(
+                                      count: item.productId,
+                                      productName: item.productName,
+                                      productCode: item.productCode,
+                                      qty: item.quantityInstock.toString(),
+                                      rack: item.rack,
+                                      currentRate: item.currentRate.toString(),
+                                      saleRate: item.saleRate.toString(),
+                                      wholesaleRate:
+                                          item.wholesaleRate.toString(),
+                                    );
+                                  },
+                                ),
                       ),
                     ],
                   ),

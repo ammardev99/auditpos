@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zi_core/zi_core_io.dart';
+import '../network/app_constants.dart';
 import '../network/server_ip_screen.dart';
 import 'login_form.dart';
 
@@ -38,7 +39,7 @@ class LoginScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 20),
                 Text(
-                  "Mart POS",
+                  "${AppConstants.pos.name} Audit",
                   style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 40),

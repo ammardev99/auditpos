@@ -25,6 +25,7 @@ class AuditApp extends StatelessWidget {
         primaryColor: ZiColors.primary,
       ),
       home: const ServerIpScreen(),
+      // home: const PairingScreen(),
     );
   }
 }

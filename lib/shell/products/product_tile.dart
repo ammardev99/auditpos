@@ -94,7 +94,7 @@ class ProductTile extends StatelessWidget {
                     children: [
                       Text(
                         "Sale-Rs: ",
-                        style: ZiTypoStyles.noMd.copyWith(color: ZiColors.gray),
+                        style: ZiTypoStyles.noMd.copyWith(color: ZiColors.grey),
                       ),
                       Text(
                         saleRate,

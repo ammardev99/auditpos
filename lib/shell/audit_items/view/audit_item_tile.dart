@@ -83,7 +83,7 @@ class AuditItemTile extends StatelessWidget {
 
                         Row(
                           children: [
-                            Icon(Icons.qr_code, size: 18, color: ZiColors.grayLight,),
+                            Icon(Icons.qr_code, size: 18, color: ZiColors.greyLight,),
                             ziGap(4),
                             Text(
                               item.productCode,

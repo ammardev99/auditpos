@@ -1,5 +1,6 @@
 import 'package:auditpos/shell/auth_/login_screen.dart';
 import 'package:auditpos/shell/network/app_constants.dart';
+import 'package:auditpos/shell/network/qr_config/pairing_screen.dart';
 import 'package:auditpos/shell/network/server_model.dart';
 import 'package:flutter/material.dart';
 import 'package:zi_core/zi_core_io.dart';
@@ -22,6 +23,12 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
 
   bool isIPEmpty = true;
   bool isMore = false;
+
+  int selectedTab = 0;
+
+  bool qrValidated = false;
+
+  String? scannedQrData;
 
   ConnectionType connectionType = ConnectionType.port;
 
@@ -81,6 +88,14 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
     );
   }
 
+  bool isValidIp(String ip) {
+    final regex = RegExp(
+      r'^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$',
+    );
+
+    return regex.hasMatch(ip.trim());
+  }
+
   @override
   void dispose() {
     ipController.removeListener(_onIpChanged);
@@ -134,18 +149,15 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
 
             child: Padding(
               padding: const EdgeInsets.all(20),
-
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-
                 children: [
-                  const Icon(Icons.dns, size: 90),
-
-                  const SizedBox(height: 20),
-
+                  if (selectedTab == 1) const Icon(Icons.dns, size: 90),
+                  const SizedBox(height: 10),
                   Text(
-                    "Server Configuration",
-
+                    selectedTab == 1
+                        ? "Server Configuration"
+                        : "App Configuration",
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -153,108 +165,34 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
 
-                  TextField(
-                    controller: ipController,
-
-                    decoration: InputDecoration(
-                      labelText: "IP Address",
-
-                      border: const OutlineInputBorder(),
-
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.qr_code_scanner),
-
-                        onPressed: () async {
-                          final scannedIp = await ZiToBarCodeScanner.scan(
-                            context,
-                          );
-
-                          if (scannedIp != null && scannedIp.isNotEmpty) {
-                            ipController.text = scannedIp;
-                          }
-                        },
+                  SegmentedButton<int>(
+                    segments: const [
+                      ButtonSegment(
+                        value: 0,
+                        label: Text("Scan QR"),
+                        icon: Icon(Icons.qr_code_scanner),
                       ),
-                    ),
+                      ButtonSegment(
+                        value: 1,
+                        label: Text("Manual"),
+                        icon: Icon(Icons.settings),
+                      ),
+                    ],
+                    selected: {selectedTab},
+                    onSelectionChanged: (value) {
+                      setState(() {
+                        selectedTab = value.first;
+                      });
+                    },
                   ),
 
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      ZiCheckBoxD(
-                        value: isMore,
-                        label: "More..",
-                        onChanged: (value) {
-                          setState(() {
-                            isMore = value;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
+                  const SizedBox(height: 20),
 
-                  if (isMore) ...[
-                  const SizedBox(height: 10),
-                    TextField(
-                      controller: nameController,
+                  if (selectedTab == 0) Expanded(child: PairingScreen()),
 
-                      decoration: const InputDecoration(
-                        labelText: "Server Name",
-
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    buildConnectionSelector(),
-
-                    const SizedBox(height: 15),
-
-                    if (connectionType == ConnectionType.port) ...[
-                      TextField(
-                        controller: httpPortController,
-
-                        keyboardType: TextInputType.number,
-
-                        decoration: const InputDecoration(
-                          labelText: "HTTP Port",
-
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-
-                      const SizedBox(height: 15),
-
-                      TextField(
-                        controller: wsPortController,
-
-                        keyboardType: TextInputType.number,
-
-                        decoration: const InputDecoration(
-                          labelText: "WS Port",
-
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ],
-
-                    if (connectionType == ConnectionType.path) ...[
-                      TextField(
-                        controller: basePathController,
-
-                        decoration: const InputDecoration(
-                          labelText: "Base Path",
-
-                          hintText: "billinga",
-
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ],
-                  ],
+                  if (selectedTab == 1) buildManualTab(),
 
                   const SizedBox(height: 25),
 
@@ -262,10 +200,11 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
                     children: [
                       Expanded(
                         child: ZiButtonB(
-                          disabled: isIPEmpty,
-
+                          disabled:
+                              selectedTab == 0
+                                  ? !qrValidated
+                                  : !isValidIp(ipController.text),
                           label: "Continue",
-
                           action: continueToLogin,
                         ),
                       ),
@@ -277,6 +216,164 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget buildQrTab() {
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              const Icon(Icons.qr_code_2, color: Colors.grey, size: 120),
+              const SizedBox(height: 10),
+              Text(
+                qrValidated ? "Configuration Valid" : "Scan Configuration QR",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              if (scannedQrData != null)
+                // Text(scannedQrData!, textAlign: TextAlign.center),
+                const SizedBox(height: 15),
+
+              ZiButtonB(
+                variant: ZiButtonVariantB.outline,
+                label: "Scan QR", // scan again
+                action: () async {
+                  final result = await ZiToBarCodeScanner.scan(context);
+
+                  if (result == null || result.isEmpty) {
+                    return;
+                  }
+
+                  if (!isValidIp(result)) {
+                    setState(() {
+                      qrValidated = false;
+                    });
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Invalid IP Address")),
+                      );
+                    }
+
+                    return;
+                  }
+
+                  ipController.text = result;
+
+                  setState(() {
+                    scannedQrData = result;
+                    qrValidated = true;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildManualTab() {
+    return Column(
+      children: [
+        TextField(
+          controller: ipController,
+          decoration: InputDecoration(
+            labelText: "IP Address",
+            border: const OutlineInputBorder(),
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.qr_code_scanner),
+              onPressed: () async {
+                final scannedIp = await ZiToBarCodeScanner.scan(context);
+
+                if (scannedIp != null && scannedIp.isNotEmpty) {
+                  ipController.text = scannedIp;
+                }
+              },
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 10),
+
+        Row(
+          children: [
+            ZiCheckBoxD(
+              value: isMore,
+              label: "Advanced Settings",
+              onChanged: (value) {
+                setState(() {
+                  isMore = value;
+                });
+              },
+            ),
+          ],
+        ),
+
+        if (isMore) ...[
+          const SizedBox(height: 10),
+
+          TextField(
+            controller: nameController,
+            decoration: const InputDecoration(
+              labelText: "Server Name",
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
+          buildConnectionSelector(),
+
+          const SizedBox(height: 15),
+
+          if (connectionType == ConnectionType.port) ...[
+            TextField(
+              controller: httpPortController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: "HTTP Port",
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            TextField(
+              controller: wsPortController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: "WS Port",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+
+          if (connectionType == ConnectionType.path) ...[
+            TextField(
+              controller: basePathController,
+              decoration: const InputDecoration(
+                labelText: "Base Path",
+                hintText: "billinga",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ],
+      ],
     );
   }
 }

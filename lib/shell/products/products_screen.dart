@@ -6,6 +6,7 @@ import 'package:auditpos/shell/products/product_tile.dart';
 import 'package:zi_core/zi_core_io.dart';
 import '../../bar_code_scanner/bar_code_io.dart';
 import '../network/websocket_service.dart';
+import 'add_product_screen.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
   const ProductsScreen({super.key});
@@ -107,7 +108,30 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       Expanded(
                         child:
                             state.filteredData.isEmpty
-                                ? const Center(child: Text("No products found"))
+                                ? Center(
+                                  child: Column(
+                                    children: [
+                                      Text("No products found"),
+                                      ziGap(10),
+                                      ZiButtonB(
+                                        label: "Add New Item",
+                                        variant: ZiButtonVariantB.text,
+                                        action: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (_) => AddProductScreen(
+                                                    productCode:
+                                                        searchController.text,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                )
                                 : ListView.builder(
                                   itemCount: state.filteredData.length,
                                   itemBuilder: (context, index) {

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:zi_core/zi_core_io.dart';
 
 import '../../audit_items/view/audit_screen.dart';
+import '../../products/add_product_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({
@@ -23,7 +24,7 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             children: [
               ziGap(16),
-      
+
               SystemInfoBar(),
               ziGap(12),
               Expanded(
@@ -52,7 +53,9 @@ class DashboardScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const AuditScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const AuditScreen(),
+                          ),
                         );
                       },
                     ),
@@ -69,24 +72,51 @@ class DashboardScreen extends StatelessWidget {
                         );
                       },
                     ),
-      
+                    DashboardCard(
+                      title: "Add Item",
+                      icon: Icons.inventory,
+                      color: Colors.purpleAccent,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (_) => const AddProductScreen(), // pass barcode
+                          ),
+                        );
+                      },
+                    ),
+
                     // Wrapped this specific card so it rebuilds whenever the connection state flips
                     ValueListenableBuilder<bool>(
                       valueListenable:
                           WebSocketService.instance.isConnectedNotifier,
                       builder: (context, isConnected, _) {
                         return DashboardCard(
-                          title: isConnected ? "Sys Connected" : "Sys Disconnected",
+                          title:
+                              isConnected
+                                  ? "Sys Connected"
+                                  : "Sys Disconnected",
                           icon: Icons.wifi,
                           color: isConnected ? Colors.green : Colors.red,
                           onTap: () async {
                             if (isConnected) {
-                              WebSocketService.instance.disconnect();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("WebSocket Disconnected"),
-                                ),
-                              );
+                              bool? doDisconnect =
+                                  await ZiConfirmationUser.show(
+                                    context: context,
+                                    title: "Disconnect?",
+                                    actionLabel: "Disconnected",
+                                    icon: Icons.wifi,
+                                  );
+                              if (doDisconnect!) {
+                                WebSocketService.instance.disconnect();
+                                // ignore: use_build_context_synchronously
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("WebSocket Disconnected"),
+                                  ),
+                                );
+                              }
                             } else {
                               await WebSocketService.instance.connect();
                               if (!context.mounted) return;
@@ -100,14 +130,14 @@ class DashboardScreen extends StatelessWidget {
                         );
                       },
                     ),
-      
+
                     DashboardCard(
                       title: "Logout",
                       icon: Icons.logout,
                       color: Colors.brown,
                       onTap: () async {
                         final auth = AuthService();
-      
+
                         await auth.logout(context);
                       },
                     ),

@@ -9,7 +9,7 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ZiScaffoldB(
       appBar: AppBar(
         actions: [
           IconButton(
@@ -26,27 +26,24 @@ class LoginScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.point_of_sale_rounded,
-                  size: 90,
-                  color: ZiColors.primary,
-                ),
-                SizedBox(height: 20),
-                Text(
-                  "${AppConstants.pos.name} Audit",
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 40),
-                LoginForm(),
-              ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(height: 40),
+            Icon(
+              Icons.point_of_sale_rounded,
+              size: 90,
+              color: ZiColors.primary,
             ),
-          ),
+            SizedBox(height: 20),
+            Text(
+              "${AppConstants.pos.name}Audit",
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 40),
+            LoginForm(),
+            SizedBox(height: 40),
+          ],
         ),
       ),
     );

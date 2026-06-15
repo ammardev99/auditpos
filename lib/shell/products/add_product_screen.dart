@@ -74,182 +74,169 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
     WebSocketService.instance.send(payload);
   }
-  // void submit() async {
-  //   if (!_formKey.currentState!.validate()) return;
-
-  //   setState(() => loading = true);
-
-  //   final payload = {
-  //     "action": "create_product",
-  //     "payload": {
-  //       "product_name": nameController.text,
-  //       "product_name_urdu": nameController.text,
-  //       // "product_name_urdu": urduNameController.text,
-  //       "product_code": codeController.text,
-  //       "brand_id": int.tryParse(brandController.text) ?? 0,
-  //       "category_id": int.tryParse(categoryController.text) ?? 0,
-  //       "current_rate": double.tryParse(currentRateController.text) ?? 0,
-  //       "f_days": double.tryParse(wholesaleController.text) ?? 0,
-  //       "purchase_rate": double.tryParse(purchaseController.text) ?? 0,
-  //       "alert_at": int.tryParse(alertController.text) ?? 0,
-  //       "availability": 1,
-  //       "rack": rackController.text,
-  //       "product_description": descriptionController.text,
-  //     },
-  //   };
-
-  //   WebSocketService.instance.send(payload);
-
-  //   setState(() => loading = false);
-
-  //   if (mounted) {
-  //     ScaffoldMessenger.of(
-  //       context,
-  //     ).showSnackBar(const SnackBar(content: Text("Product sent to server")));
-  //     Navigator.pop(context);
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
     return ZiScaffoldB(
       appBar: ZiAppBarB(title: "Add Product"),
 
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          children: [
-            ziGap(10),
-            ZiInput(
-              controller: codeController,
-              label: "Product Code",
-              type: ZiInputType.text,
-              variant: ZiInputVariant.animateLabelOutline,
-              validator: (v) => v!.isEmpty ? "Required" : null,
-              suffix: IconButton(
-                onPressed: scanBarcode,
-                icon: Icon(Icons.qr_code),
+      body: ValueListenableBuilder<bool>(
+        valueListenable: WebSocketService.instance.isConnectedNotifier,
+        builder: (context, connected, child) {
+          if (!connected) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.wifi_off_rounded, size: 60, color: Colors.red),
+                  SizedBox(height: 12),
+                  Text(
+                    "WebSocket not connected",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ],
               ),
-              isRequired: true,
-            ),
+            );
+          }
 
-            ziGap(10),
-
-            ZiInput(
-              controller: nameController,
-              label: "Product Name",
-              variant: ZiInputVariant.animateLabelOutline,
-              type: ZiInputType.text,
-              isRequired: true,
-            ),
-
-            ziGap(10),
-
-            // ZiInput(
-            //   controller: urduNameController,
-            //   label: "Product Name (Urdu)",
-            //   type: ZiInputType.text,
-            //   variant: ZiInputVariant.animateLabelOutline,
-            // ),
-
-            // ZiInput(
-            //   controller: brandController,
-            //   label: "Brand ID",
-            //   variant: ZiInputVariant.animateLabelOutline,
-            //   type: ZiInputType.number,
-            // ),
-
-            // ZiInput(
-            //   controller: categoryController,
-            //   label: "Category ID",
-            //   variant: ZiInputVariant.animateLabelOutline,
-            //   type: ZiInputType.number,
-            // ),
-            ziGap(10),
-            Row(
+          return Form(
+            key: _formKey,
+            child: ListView(
               children: [
-                Expanded(
-                  child: ZiInput(
-                    controller: alertController,
-                    label: "Alert Qty",
-                    variant: ZiInputVariant.animateLabelOutline,
-                    type: ZiInputType.number,
+                ziGap(10),
+                ZiInput(
+                  controller: codeController,
+                  label: "Product Code",
+                  type: ZiInputType.text,
+                  variant: ZiInputVariant.animateLabelOutline,
+                  validator: (v) => v!.isEmpty ? "Required" : null,
+                  suffix: IconButton(
+                    onPressed: scanBarcode,
+                    icon: Icon(Icons.qr_code),
                   ),
+                  isRequired: true,
+                ),
+
+                ziGap(10),
+
+                ZiInput(
+                  controller: nameController,
+                  label: "Product Name",
+                  variant: ZiInputVariant.animateLabelOutline,
+                  type: ZiInputType.text,
+                  isRequired: true,
+                ),
+
+                ziGap(10),
+
+                // ZiInput(
+                //   controller: urduNameController,
+                //   label: "Product Name (Urdu)",
+                //   type: ZiInputType.text,
+                //   variant: ZiInputVariant.animateLabelOutline,
+                // ),
+
+                // ZiInput(
+                //   controller: brandController,
+                //   label: "Brand ID",
+                //   variant: ZiInputVariant.animateLabelOutline,
+                //   type: ZiInputType.number,
+                // ),
+
+                // ZiInput(
+                //   controller: categoryController,
+                //   label: "Category ID",
+                //   variant: ZiInputVariant.animateLabelOutline,
+                //   type: ZiInputType.number,
+                // ),
+                ziGap(10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ZiInput(
+                        controller: alertController,
+                        label: "Alert Qty",
+                        variant: ZiInputVariant.animateLabelOutline,
+                        type: ZiInputType.number,
+                      ),
+                    ),
+                    ziGap(10),
+                    Expanded(
+                      child: ZiInput(
+                        controller: rackController,
+                        label: "Rack",
+                        variant: ZiInputVariant.animateLabelOutline,
+                        type: ZiInputType.text,
+                      ),
+                    ),
+                  ],
                 ),
                 ziGap(10),
-                Expanded(
-                  child: ZiInput(
-                    controller: rackController,
-                    label: "Rack",
-                    variant: ZiInputVariant.animateLabelOutline,
-                    type: ZiInputType.text,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ZiInput(
+                        controller: currentRateController,
+                        label: "Current Rate",
+                        variant: ZiInputVariant.animateLabelOutline,
+                        type: ZiInputType.number,
+                        isRequired: true,
+                      ),
+                    ),
+                    ziGap(10),
+                    Expanded(
+                      child: ZiInput(
+                        controller: wholesaleController,
+                        label: "Wholesale Rate",
+                        variant: ZiInputVariant.animateLabelOutline,
+                        type: ZiInputType.number,
+                        isRequired: true,
+                      ),
+                    ),
+                  ],
+                ),
+
+                ziGap(10),
+                ZiInput(
+                  controller: purchaseController,
+                  label: "Purchase Rate",
+                  variant: ZiInputVariant.animateLabelOutline,
+                  type: ZiInputType.number,
+                  isRequired: true,
+                ),
+
+                ziGap(10),
+                ZiInput(
+                  controller: descriptionController,
+                  hint: "Description",
+                  variant: ZiInputVariant.animateLabelOutline,
+                  type: ZiInputType.multiline,
+                ),
+
+                const SizedBox(height: 20),
+
+                ZiButtonB(
+                  label: loading ? "Creating..." : "Add New Item",
+                  action: () async {
+                    final isValid = _formKey.currentState!.validate();
+
+                    if (!isValid) return;
+
+                    final isCreate = await ZiConfirmationUser.saveChanges(
+                      context: context,
+                      title:
+                          "${nameController.text} ${currentRateController.text}",
+                    );
+
+                    if (isCreate == true) {
+                      submit();
+                    }
+                  },
                 ),
               ],
             ),
-            ziGap(10),
-            Row(
-              children: [
-                Expanded(
-                  child: ZiInput(
-                    controller: currentRateController,
-                    label: "Current Rate",
-                    variant: ZiInputVariant.animateLabelOutline,
-                    type: ZiInputType.number,
-                    isRequired: true,
-                  ),
-                ),
-                ziGap(10),
-                Expanded(
-                  child: ZiInput(
-                    controller: wholesaleController,
-                    label: "Wholesale Rate",
-                    variant: ZiInputVariant.animateLabelOutline,
-                    type: ZiInputType.number,
-                    isRequired: true,
-                  ),
-                ),
-              ],
-            ),
-
-            ziGap(10),
-            ZiInput(
-              controller: purchaseController,
-              label: "Purchase Rate",
-              variant: ZiInputVariant.animateLabelOutline,
-              type: ZiInputType.number,
-              isRequired: true,
-            ),
-
-            ziGap(10),
-            ZiInput(
-              controller: descriptionController,
-              hint: "Description",
-              variant: ZiInputVariant.animateLabelOutline,
-              type: ZiInputType.multiline,
-            ),
-
-            const SizedBox(height: 20),
-
-            ZiButtonB(
-              label: loading ? "Creating..." : "Add New Item",
-              action: () async {
-                final isValid = _formKey.currentState!.validate();
-
-                if (!isValid) return;
-
-                final isCreate = await ZiConfirmationUser.saveChanges(
-                  context: context,
-                  title: "${nameController.text} ${currentRateController.text}",
-                );
-
-                if (isCreate == true) {
-                  submit();
-                }
-              },
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

@@ -28,23 +28,6 @@ class SystemInfoBar extends StatelessWidget {
                 "POS: ${pos.name}",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              Spacer(),
-              ValueListenableBuilder<bool>(
-                valueListenable: WebSocketService.instance.isConnectedNotifier,
-                builder: (context, connected, _) {
-                  return Row(
-                    children: [
-                      Icon(
-                        Icons.circle,
-                        size: 12,
-                        color: connected ? Colors.green : Colors.red,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(connected ? "WS Connected" : "WS Disconnected"),
-                    ],
-                  );
-                },
-              ),
             ],
           ),
 
@@ -71,7 +54,31 @@ class SystemInfoBar extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("User: $name"),
+                  Row(
+                    children: [
+                      Text("User: $name"),
+                      Spacer(),
+                      ValueListenableBuilder<bool>(
+                        valueListenable:
+                            WebSocketService.instance.isConnectedNotifier,
+                        builder: (context, connected, _) {
+                          return Row(
+                            children: [
+                              Icon(
+                                Icons.circle,
+                                size: 12,
+                                color: connected ? Colors.green : Colors.red,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                connected ? "WS Connected" : "WS Disconnected",
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                   // Text("Email: $email")
                 ],
               );

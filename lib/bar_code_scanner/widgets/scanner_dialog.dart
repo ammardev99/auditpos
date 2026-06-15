@@ -115,7 +115,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     final state = ref.watch(scannerProvider);
     final primaryColor = ZiColors.primary;
 
-    return Scaffold(
+    return ZiScaffoldB(
       backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Scanner'),
@@ -266,7 +266,7 @@ class _CameraViewport extends StatelessWidget {
         Align(
           alignment: const Alignment(0, 0.82),
           child: Text(
-            multiScan ? 'Keep scanning…' : 'Align barcode within frame',
+            multiScan ? 'Keep scanning…' : 'Align within frame',
             style: const TextStyle(
               color: Colors.white54,
               fontSize: 12,

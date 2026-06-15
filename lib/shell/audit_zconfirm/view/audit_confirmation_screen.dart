@@ -66,7 +66,7 @@ class _AuditConfirmationScreenState
     );
     final visibleList = stateWatcher.computedVisibleItems;
 
-    return Scaffold(
+    return ZiScaffoldB(
       appBar: ZiAppBarB(
         title: "Confirm Audit: ${widget.auditNo}",
         subtitle: widget.readOnly ? "READ ONLY MODE" : null,

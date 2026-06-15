@@ -117,7 +117,7 @@ class _PairingScreenState extends State<PairingScreen> {
       child: Row(
         children: [
           SizedBox(
-            width: 80,
+            width: 40,
             child: Text(
               title,
               style: const TextStyle(fontWeight: FontWeight.w600),
@@ -136,121 +136,120 @@ class _PairingScreenState extends State<PairingScreen> {
   Widget build(BuildContext context) {
     final isConnected = _config != null;
 
-    return Scaffold(
-      // appBar: AppBar(title: const Text("POS Pairing"), centerTitle: true),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Center(
-          child: Column(
-            children: [
-              // const SizedBox(height: 20),
+    return ZiScaffoldB(
+      body: Center(
+        child: Column(
+          children: [
+            // const SizedBox(height: 20),
 
-              /// ICON
-              if (_config == null) const Icon(Icons.qr_code_scanner, size: 80),
+            /// ICON
+            if (_config == null) const Icon(Icons.qr_code_scanner, size: 80),
 
-              const SizedBox(height: 12),
+            const SizedBox(height: 12),
 
-              const Text(
-                "POS Pairing",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const Text(
-                "Make sure desktop POS QR is active",
-                style: TextStyle(fontSize: 12),
-              ),
+            const Text(
+              "POS Pairing",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const Text(
+              "Make sure desktop POS QR is active",
+              style: TextStyle(fontSize: 12),
+            ),
 
-              // const SizedBox(height: 8),
+            // const SizedBox(height: 8),
 
-              // const Text(
-              //   "Scan QR code from Desktop POS to auto configure connection",
-              //   textAlign: TextAlign.center,
-              // ),
-              const SizedBox(height: 20),
+            // const Text(
+            //   "Scan QR code from Desktop POS to auto configure connection",
+            //   textAlign: TextAlign.center,
+            // ),
+            const SizedBox(height: 20),
 
-              /// ERROR BOX
-              if (_error != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    border: Border.all(color: Colors.red),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
+            /// ERROR BOX
+            if (_error != null)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  border: Border.all(color: Colors.red),
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                child: Text(_error!, style: const TextStyle(color: Colors.red)),
+              ),
 
-              if (_error != null) const SizedBox(height: 10),
+            if (_error != null) const SizedBox(height: 10),
 
-              /// SCAN BUTTON
-              if (!isConnected)
-                ElevatedButton.icon(
-                  onPressed: _loading ? null : _scanQr,
-                  icon: const Icon(Icons.qr_code),
-                  label: Text(_loading ? "Scanning..." : "Scan to Connect"),
+            /// SCAN BUTTON
+            if (!isConnected)
+              ZiButtonB(
+                style: ZiButtonStyleB(borderRadius: BorderRadius.circular(100)),
+                action: _loading ? null : _scanQr,
+                icon: const Icon(Icons.qr_code),
+                label: _loading ? "Scanning..." : "Scan to Connect",
+              ),
+
+            // const SizedBox(height: 20),
+
+            /// CONFIG PREVIEW
+            if (_config != null)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.green),
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "✓ POS Found",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
 
-              // const SizedBox(height: 20),
+                    const SizedBox(height: 10),
 
-              /// CONFIG PREVIEW
-              if (_config != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.green),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "✓ POS Found",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
+                    _row("Mart", _config!.martName),
+                    Text(
+                      " ${_config!.serverIp}"
+                      ", ${_config!.httpPort}"
+                      ", ${_config!.dbName}"
+                      ", ${_config!.wsPort}"
+                      ", ${_config!.basePath}",
+                      textAlign: TextAlign.left,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ZiButtonB(
+                            action: _scanQr,
+                            label: "Rescan",
+                            variant: ZiButtonVariantB.secondary,
+                          ),
                         ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      _row("Mart", _config!.martName),
-                      _row("Server IP", _config!.serverIp),
-                      Text(
-                        " ${_config!.httpPort}"
-                        ", ${_config!.dbName}"
-                        ", ${_config!.wsPort}"
-                        " | ${_config!.basePath}",
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: _scanQr,
-                              child: const Text("Rescan"),
-                            ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ZiButtonB(
+                            action: _continue,
+                            label: "Continue",
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: _continue,
-                              child: const Text("Continue"),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+
+                          // ElevatedButton(
+                          // ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );

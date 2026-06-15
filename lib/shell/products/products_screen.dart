@@ -60,7 +60,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     return ValueListenableBuilder<bool>(
       valueListenable: WebSocketService.instance.isConnectedNotifier,
       builder: (context, connected, _) {
-        return Scaffold(
+        return ZiScaffoldB(
           appBar: ZiAppBarB(title: "Products (${state.filteredData.length})"),
 
           body:
@@ -72,37 +72,34 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                   ? Center(child: Text("Error: ${state.error}"))
                   : Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: ZiInput(
-                          prefix: const Icon(Icons.search),
-                          // label: "",
-                          hint: "Search by name or barcode",
-                          type: ZiInputType.search,
-                          controller: searchController,
-
-                          suffix:
-                              searchController.text.isNotEmpty
-                                  ? IconButton(
-                                    icon: const Icon(Icons.clear),
-                                    onPressed: () {
-                                      searchController.clear();
-                                      ref
-                                          .read(productProvider.notifier)
-                                          .searchProducts('');
-                                      setState(() {});
-                                    },
-                                  )
-                                  : IconButton(
-                                    icon: const Icon(Icons.qr_code_scanner),
-                                    onPressed: searchScan,
-                                  ),
-                          onChanged: (value) {
-                            ref
-                                .read(productProvider.notifier)
-                                .searchProducts(value);
-                          },
-                        ),
+                      ZiInput(
+                        prefix: const Icon(Icons.search),
+                        // label: "",
+                        hint: "Search by name or barcode",
+                        type: ZiInputType.search,
+                        controller: searchController,
+                      
+                        suffix:
+                            searchController.text.isNotEmpty
+                                ? IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    searchController.clear();
+                                    ref
+                                        .read(productProvider.notifier)
+                                        .searchProducts('');
+                                    setState(() {});
+                                  },
+                                )
+                                : IconButton(
+                                  icon: const Icon(Icons.qr_code_scanner),
+                                  onPressed: searchScan,
+                                ),
+                        onChanged: (value) {
+                          ref
+                              .read(productProvider.notifier)
+                              .searchProducts(value);
+                        },
                       ),
 
                       Expanded(

@@ -29,7 +29,7 @@ class AuditSessionHTile extends StatelessWidget {
 
     return Card(
       elevation: 2,
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(14.0),

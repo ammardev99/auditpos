@@ -123,7 +123,7 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
         ButtonSegment(
           value: ConnectionType.path,
 
-          label: Text("link"),
+          label: Text("Base"),
 
           icon: Icon(Icons.link),
         ),
@@ -141,78 +141,72 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SizedBox(
-            width: 420,
+    return ZiScaffoldB(
+      body: Center(
+        child: SizedBox(
+          width: 420,
 
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (selectedTab == 1) const Icon(Icons.dns, size: 90),
-                  const SizedBox(height: 10),
-                  Text(
-                    selectedTab == 1
-                        ? "Server Configuration"
-                        : "App Configuration",
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: ZiColors.primary,
-                    ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (selectedTab == 1) const Icon(Icons.dns, size: 40),
+              const SizedBox(height: 10),
+              Text(
+                selectedTab == 1 ? "Server Configuration" : "App Configuration",
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: ZiColors.primary,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              SegmentedButton<int>(
+                segments: const [
+                  ButtonSegment(
+                    value: 0,
+                    label: Text("Scan QR"),
+                    icon: Icon(Icons.qr_code_scanner),
                   ),
-
-                  const SizedBox(height: 20),
-
-                  SegmentedButton<int>(
-                    segments: const [
-                      ButtonSegment(
-                        value: 0,
-                        label: Text("Scan QR"),
-                        icon: Icon(Icons.qr_code_scanner),
-                      ),
-                      ButtonSegment(
-                        value: 1,
-                        label: Text("Manual"),
-                        icon: Icon(Icons.settings),
-                      ),
-                    ],
-                    selected: {selectedTab},
-                    onSelectionChanged: (value) {
-                      setState(() {
-                        selectedTab = value.first;
-                      });
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  if (selectedTab == 0) Expanded(child: PairingScreen()),
-
-                  if (selectedTab == 1) buildManualTab(),
-
-                  const SizedBox(height: 25),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ZiButtonB(
-                          disabled:
-                              selectedTab == 0
-                                  ? !qrValidated
-                                  : !isValidIp(ipController.text),
-                          label: "Continue",
-                          action: continueToLogin,
-                        ),
-                      ),
-                    ],
+                  ButtonSegment(
+                    value: 1,
+                    label: Text("Manual"),
+                    icon: Icon(Icons.settings),
                   ),
                 ],
+                selected: {selectedTab},
+                onSelectionChanged: (value) {
+                  setState(() {
+                    selectedTab = value.first;
+                  });
+                },
               ),
-            ),
+
+              const SizedBox(height: 20),
+
+              if (selectedTab == 0) Expanded(child: PairingScreen()),
+
+              if (selectedTab == 1) buildManualTab(),
+
+              const SizedBox(height: 10),
+
+              if (selectedTab == 1)
+                Row(
+                  children: [
+                    Expanded(
+                      child: ZiButtonB(
+                        disabled:
+                            selectedTab == 0
+                                ? !qrValidated
+                                : !isValidIp(ipController.text),
+                        label: "Continue",
+                        action: continueToLogin,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
           ),
         ),
       ),
@@ -287,7 +281,8 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
   }
 
   Widget buildManualTab() {
-    return Column(
+    return ListView(
+      shrinkWrap: true,
       children: [
         TextField(
           controller: ipController,
@@ -313,7 +308,7 @@ class _ServerIpScreenState extends State<ServerIpScreen> {
           children: [
             ZiCheckBoxD(
               value: isMore,
-              label: "Advanced Settings",
+              label: "More Settings",
               onChanged: (value) {
                 setState(() {
                   isMore = value;

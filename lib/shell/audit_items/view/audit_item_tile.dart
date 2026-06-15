@@ -41,7 +41,7 @@ class AuditItemTile extends StatelessWidget {
     return Card(
       elevation: 1,
       color: ZiColors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(

@@ -46,7 +46,7 @@ class _AuditSessionsHScreenState extends ConsumerState<AuditSessionsHScreen> {
       valueListenable: WebSocketService.instance.isConnectedNotifier,
 
       builder: (context, connected, _) {
-        return Scaffold(
+        return ZiScaffoldB(
           appBar: ZiAppBarB(
             title: "Audit Sessions (${state.sessions.length})",
 

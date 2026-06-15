@@ -77,7 +77,7 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
             }
           },
 
-          child: Scaffold(
+          child: ZiScaffoldB(
             appBar: ZiAppBarB(
               title:
                   state.session == null
@@ -111,9 +111,9 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
                 !connected
                     ? null
                     : Padding(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.only( left: 12, right: 12, bottom: 12, top: 2),
                       child: SizedBox(
-                        height: 52,
+                        height: 48,
                         child: ZiButtonB(
                           icon: Icon(
                             state.session == null
@@ -181,56 +181,52 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
                       children: [
                         /// SEARCH BAR (Shows if we have *any* master items loaded)
                         if (state.items.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: ZiInput(
-                              prefix: const Icon(Icons.search),
-                              // label: "",
-                              hint: "Search by name or barcode",
-                              type: ZiInputType.search,
-                              controller: searchController,
-                              suffix:
-                                  searchController.text.isNotEmpty
-                                      ? IconButton(
-                                        icon: const Icon(Icons.clear),
-                                        onPressed: () {
-                                          searchController.clear();
-                                          notifier.searchItems(' ');
-                                          setState(() {});
-                                        },
-                                      )
-                                      : IconButton(
-                                        icon: const Icon(Icons.qr_code_scanner),
-                                        onPressed: searchScan,
-                                      ),
-                              onChanged: (value) {
-                                notifier.searchItems(value);
-                              },
-                            ),
+                          ZiInput(
+                            prefix: const Icon(Icons.search),
+                            // label: "",
+                            hint: "Search by name or barcode",
+                            type: ZiInputType.search,
+                            controller: searchController,
+                            suffix:
+                                searchController.text.isNotEmpty
+                                    ? IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      onPressed: () {
+                                        searchController.clear();
+                                        notifier.searchItems(' ');
+                                        setState(() {});
+                                      },
+                                    )
+                                    : IconButton(
+                                      icon: const Icon(Icons.qr_code_scanner),
+                                      onPressed: searchScan,
+                                    ),
+                            onChanged: (value) {
+                              notifier.searchItems(value);
+                            },
                           ),
+
+                          ziGap(10),
 
                         /// STATS CHIPS BAR
                         if (state.session != null && state.items.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Row(
-                              children: [
-                                _buildChip(
-                                  label: "Total $totalItems",
-                                  color: Colors.blue,
-                                ),
-                                const SizedBox(width: 8),
-                                _buildChip(
-                                  label: "Updated $updatedItems",
-                                  color: Colors.orange,
-                                ),
-                                const SizedBox(width: 8),
-                                _buildChip(
-                                  label: "Pending ${totalItems - updatedItems}",
-                                  color: Colors.red,
-                                ),
-                              ],
-                            ),
+                          Row(
+                            children: [
+                              _buildChip(
+                                label: "Total $totalItems",
+                                color: Colors.blue,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildChip(
+                                label: "Updated $updatedItems",
+                                color: Colors.orange,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildChip(
+                                label: "Pending ${totalItems - updatedItems}",
+                                color: Colors.red,
+                              ),
+                            ],
                           ),
 
                         const SizedBox(height: 8),
